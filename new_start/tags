@@ -1,0 +1,23 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+Foo	ex1.cpp	/^class Foo{$/;"	c	language:C++	file:
+a	data_structures/p6.cpp	/^    int a=2,b=3;$/;"	l	language:C++
+a	temp.cpp	/^    int a=6;$/;"	l	language:C++
+b	data_structures/p6.cpp	/^    int a=2,b=3;$/;"	l	language:C++
+b	tags	/^b	data_structures\/p6.cpp	\/^    int a=2,b=3;$\/;"	l	language:C++$/;"	l	language:C++
+count	data_structures/p6.cpp	/^T count(T a,T b){$/;"	f	language:C++	signature:(T a,T b)
+find_char	ex1.cpp	/^string::size_type find_char(const string& s,char c){$/;"	f	language:C++	signature:(const string& s,char c)
+format	tags	/^!_TAG_FILE_FORMAT	2	\/extended format; --format=1 will not append ;" to lines\/$/;"	v	language:C++
+i	ex1.cpp	/^    string::size_type i=0;$/;"	l	language:C++
+is_sentence	ex1.cpp	/^bool is_sentence(const string &s){$/;"	f	language:C++	signature:(const string &s)
+main	data_structures/p6.cpp	/^int main(){$/;"	f	language:C++	signature:()
+main	ex1.cpp	/^int main(int argc,char *argv[]){$/;"	f	language:C++	signature:(int argc,char *argv[])
+main	tags	/^main	data_structures\/p6.cpp	\/^int main(){$\/;"	f	language:C++	signature:()$/;"	f	language:C++	signature:()
+main	tags	/^main	ex1.cpp	\/^int main(int argc,char *argv[]){$\/;"	f	language:C++	signature:(int argc,char *argv[])$/;"	f	language:C++	signature:(int argc,char *argv[])
+main	temp.cpp	/^int main(){$/;"	f	language:C++	signature:()
+whoda	ex1.cpp	/^int whoda(int a,int* p){$/;"	f	language:C++	signature:(int a,int* p)
+whoda	tags	/^whoda	ex1.cpp	\/^int whoda(int a,int* p){$\/;"	f	language:C++	signature:(int a,int* p)$/;"	f	language:C++	signature:(int a,int* p)
