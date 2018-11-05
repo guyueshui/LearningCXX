@@ -1,3 +1,8 @@
+/*
+ * Inversion counting: count the inversion pairs using merge sort
+ * write for group meeing homework h2p1
+ * 2018年 11月 05日 星期一 23:00:35 CST
+ */
 #include <iostream>
 #include <vector>
 

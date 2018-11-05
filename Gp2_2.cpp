@@ -1,3 +1,8 @@
+/*
+ * A implemention for quick sort
+ * write for group meeting homework h2p2
+ * 2018年 11月 05日 星期一 22:59:16 CST
+ */
 #include <iostream>
 #include <vector>
 

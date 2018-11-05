@@ -1,3 +1,8 @@
+/*
+ * Merge two sorted sub seqs...
+ * write for the group meeting homework: h1p1
+ * 2018年 11月 05日 星期一 22:54:58 CST
+ */
 #include <iostream>
 #include <vector>
 

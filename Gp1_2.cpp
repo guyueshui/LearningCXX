@@ -1,3 +1,8 @@
+/*
+ * Search the insert pos for Insertion Sorting
+ * write for group meeing homework h1p2
+ * 2018年 11月 05日 星期一 22:58:06 CST
+ */
 #include <iostream>
 #include <vector>
 #include <string>
