@@ -39,11 +39,14 @@ vector<int> merge(vector<int>& a, vector<int>& b){
 vector<int> mergesort(vector<int>& seq){
 	if (seq.size() == 1) return seq;
 	else{
+		// split the seq into two subseqs
 		int lsize = seq.size() >> 1;
 		int rsize = seq.size() - lsize;
 		vector<int> tmpl, tmpr, lseq, rseq;
 		tmpl.assign(seq.begin(), seq.begin()+lsize);
 		tmpr.assign(seq.end()-rsize, seq.end());
+		
+		// recursively slove subproblems 
 		lseq = mergesort(tmpl);
 		rseq = mergesort(tmpr);
 
