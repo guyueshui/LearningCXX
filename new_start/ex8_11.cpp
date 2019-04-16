@@ -12,8 +12,8 @@ struct PersonInfo{
 };
 
 int main(int argc, char const *argv[]) {
-    string line,word;
-    std::vector<PersonInfo> people;
+    string line, word;
+    vector<PersonInfo> people;
 
     /*while(getline(cin,line)){  //book code
         PersonInfo info;

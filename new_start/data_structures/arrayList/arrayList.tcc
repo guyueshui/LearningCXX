@@ -1,5 +1,5 @@
 /*
- *  the implementation of class arrayList
+ *  The implemention of class arrayList
  */
 
 #include "arrayList.h"
