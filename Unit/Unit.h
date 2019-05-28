@@ -30,4 +30,4 @@ public:
     void printer(void);
     void convertor(void);
 };
-#endif
+#endif // _UNIT_H_
