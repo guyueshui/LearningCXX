@@ -14,15 +14,25 @@ void StrBlob::check(size_type i, const std::string& msg) const
 }
 
 // selectors
-StrBlobPtr StrBlob::begin() const
+StrBlobPtr StrBlob::begin()
 {
     check(0, "begin on empty StrBlob");
-    return StrBlobPtr(const_cast<StrBlob&>(*this), 0);
+    return StrBlobPtr(*this);
 }
-StrBlobPtr StrBlob::end() const
+StrBlobPtr StrBlob::end()
 {
     check(0, "end on empty StrBlob");
-    return StrBlobPtr(const_cast<StrBlob&>(*this), 0 + this->size());
+    return StrBlobPtr(*this, 0 + this->size());
+}
+ConstStrBlobPtr StrBlob::begin() const
+{
+    check(0, "begin on empty StrBlob");
+    return ConstStrBlobPtr(*this);
+}
+ConstStrBlobPtr StrBlob::end() const
+{
+    check(0, "end on empty StrBlob");
+    return ConstStrBlobPtr(*this, this -> size());
 }
 const std::string& StrBlob::front() const {
     check(0, "front on empty StrBlob");

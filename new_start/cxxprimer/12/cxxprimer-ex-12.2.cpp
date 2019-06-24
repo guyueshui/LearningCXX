@@ -7,6 +7,6 @@ class StrBlob {
     //...
 public:
     //...
-    std::string& front() const;
-    std::string& back() const;
+    const std::string& front() const;
+    const std::string& back() const;
 };

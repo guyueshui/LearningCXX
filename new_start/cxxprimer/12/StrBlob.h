@@ -10,7 +10,6 @@ class StrBlobPtr // a class for manage pointers to StrBlob
 {
 public:
     // ctors
-    StrBlobPtr(): curr(0) { }
     StrBlobPtr(StrBlob&, size_t sz = 0);
 
     // APIs
@@ -33,8 +32,22 @@ private:
         check(size_t, const std::string&) const;
 }; // StroBlobPtr
 
+class ConstStrBlobPtr // StrBlobPtr points to const StrBlob
+{
+public:
+    ConstStrBlobPtr(const StrBlob&, size_t sz = 0);
+    const std::string& deref() const;
+    ConstStrBlobPtr& incr();
+private:
+    std::weak_ptr<std::vector<std::string>> wptr;
+    size_t curr;
+    std::shared_ptr<std::vector<std::string>>
+        check(size_t, const std::string&) const;
+};
+
 class StrBlob {
     friend StrBlobPtr::StrBlobPtr(StrBlob&, size_t);
+    friend ConstStrBlobPtr::ConstStrBlobPtr(const StrBlob&, size_t);
 public:
     typedef std::vector<std::string>::size_type size_type;
     // ctors
@@ -52,8 +65,10 @@ public:
     void pop_back();
 
     // selectors
-    StrBlobPtr begin() const;
-    StrBlobPtr end() const;
+    StrBlobPtr begin();
+    StrBlobPtr end();
+    ConstStrBlobPtr begin() const;
+    ConstStrBlobPtr end() const;
     std::string& front();
     std::string& back();
     const std::string& front() const;
