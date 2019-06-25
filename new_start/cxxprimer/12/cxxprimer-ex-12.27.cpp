@@ -17,6 +17,7 @@
 #include <memory>
 #include <map>
 #include <set>
+#include <algorithm>
 
 class TextQuery; // declaration
 class QueryResult {
@@ -65,18 +66,19 @@ TextQuery::TextQuery(std::ifstream& infile):
             std::map<std::string, std::set<size_t>>
             >())
 {
-    std::string line, word;
     size_t line_num = 1;
-    while (std::getline(infile, line))
+    // bind file content to variables
+    for (std::string line; std::getline(infile, line); ++line_num)
     {
         pContent -> push_back(line);
         std::istringstream is(line);
-        // for each line, build the map
-        while (is >> word)
+        // for each line, build the map, ignore punctuations.
+        for (std::string text, word; is >> text; word.clear())
         {
+            std::remove_copy_if(text.begin(), text.end(),
+                    std::back_inserter(word), ispunct);
             (*pWord_lines)[word].insert(line_num);
         }
-        ++line_num;
     }
 }
 
