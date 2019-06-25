@@ -9,7 +9,7 @@ LearningCXX
 
 [sort_algos](/sort_algos) have some classic sorting algorithms implemented by STL vector.
 
-[EPI-Problems](/EPI-Prblems) stores the problems from [EPI](https://elementsofprogramminginterviews.com/), a book collects some sorts of interview problems and answered in C++.
+[EPI-Problems](/EPI-Problems) stores the problems from [EPI](https://elementsofprogramminginterviews.com/), a book collects some sorts of interview problems and answered in C++.
 
 [cxxprimer](/new_start/cxxprimer) have my solutions of problems from the book "C++ primer (5th edition)".
 
