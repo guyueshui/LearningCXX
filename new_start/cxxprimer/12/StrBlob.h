@@ -46,17 +46,23 @@ private:
 };
 
 class StrBlob {
-    friend StrBlobPtr::StrBlobPtr(StrBlob&, size_t);
-    friend ConstStrBlobPtr::ConstStrBlobPtr(const StrBlob&, size_t);
+//    friend StrBlobPtr::StrBlobPtr(StrBlob&, size_t);
+//    friend ConstStrBlobPtr::ConstStrBlobPtr(const StrBlob&, size_t);
 public:
     typedef std::vector<std::string>::size_type size_type;
     // ctors
     StrBlob();
     StrBlob(std::initializer_list<std::string> il);
+    // copy ctor
+    StrBlob(const StrBlob&);
+    // copy assignment
+    StrBlob& operator=(const StrBlob&);
 
     // APIs
     size_type size() const { return data -> size(); }
     bool empty() const { return data -> empty(); }
+    std::string& operator[](size_type);
+    const std::string& operator[](size_type) const;
 
     // modifiers
     void push_back(const std::string& t) {
@@ -65,10 +71,10 @@ public:
     void pop_back();
 
     // selectors
-    StrBlobPtr begin();
-    StrBlobPtr end();
-    ConstStrBlobPtr begin() const;
-    ConstStrBlobPtr end() const;
+//     StrBlobPtr begin();
+//     StrBlobPtr end();
+//     ConstStrBlobPtr begin() const;
+//     ConstStrBlobPtr end() const;
     std::string& front();
     std::string& back();
     const std::string& front() const;
