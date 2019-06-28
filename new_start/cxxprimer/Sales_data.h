@@ -13,14 +13,14 @@ private:
 public:
     // constructors
     Sales_data() = default;
-    Sales_data(std::string a, unsigned b, double c)
-        : bookNo(a), units_sold(b), revenue(c) {}
+    Sales_data(std::string a, unsigned b, double c):
+        bookNo(a), units_sold(b), revenue(c) {}
 
     // cannot bind const to non-const
-    Sales_data(const Sales_data& a) 
-        : bookNo(a.bookNo), 
-          units_sold(a.units_sold),
-          revenue(a.revenue) {}
+    Sales_data(const Sales_data& a):
+        bookNo(a.bookNo), 
+        units_sold(a.units_sold),
+        revenue(a.revenue) {}
     
     Sales_data(std::string _bookNo) : Sales_data(_bookNo, 0, 0) {}
 
