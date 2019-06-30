@@ -11,6 +11,6 @@ LearningCXX
 
 [EPI-Problems](/EPI-Problems) stores the problems from [EPI](https://elementsofprogramminginterviews.com/), a book collects some sorts of interview problems and answered in C++.
 
-[cxxprimer](/new_start/cxxprimer) have my solutions of problems from the book "C++ primer (5th edition)".
+[cxxprimer](/new_start/cxxprimer) have my solutions of problems from the book "C++ primer (5th edition) 【中文版】".
 
 And all the others may be some meaningless drafts.

@@ -20,8 +20,9 @@ map<string, vector<int>::iterator loc = m.find("haha");
 
 /** @IDEA
  *  For a given key that is not in the container c,
- *  - upper_bound returns c.end()
- *  - lower_bound returns c.end()
+ *  - upper_bound returns a safe insert point, which don't affect the order
+ *    of origin keys
+ *  - lower_bound returns the same insert point as upper_bound
  *  - equal_range returns a pair of {c.end(), c.end()}
  */
 
