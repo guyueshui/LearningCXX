@@ -14,8 +14,7 @@ private:
     int n; // nxn matrix
     vector<vector<int> > mat;
     // is current coordinate a border?
-    bool isBorder(const int,
-            const int);
+    bool isBorder(const int, const int);
 
 public:
     // constructor
@@ -88,13 +87,13 @@ void Mat::buildMat() {
     }
 }
 
-bool Mat::isBorder(const int _i,
-        const int _j) {
-    if (_i == n
-            || _i == -1
-            || _j == n
-            || _j == -1
-            || mat[_i][_j] != 0) return true;
+bool Mat::isBorder(const int _i, const int _j) 
+{
+    if (_i == n 
+        || _i == -1 
+        || _j == n 
+        || _j == -1
+        || mat[_i][_j] != 0) return true;
     return false;
 }
 

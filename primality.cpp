@@ -5,19 +5,19 @@
 using namespace std;
 
 auto square = [](int x) -> int { return x*x; };
-auto myremainder = [](int x, int y) -> int {
+auto myremainder = 
+  [](int x, int y) -> int 
+  {
     if (y == 0) return -1;
     return x%y;
-};
+  };
 
 int expmod(int base, int power, int m) {
     if (power == 0) return 1;
     else if (power&1)
-        return myremainder(base * expmod(base, power-1, m),
-                         m);
+        return myremainder(base * expmod(base, power-1, m), m);
     else
-        return myremainder(square(expmod(base, power>>1, m)),
-                         m);
+        return myremainder(square(expmod(base, power>>1, m)), m);
 }
 
 // Fermat test

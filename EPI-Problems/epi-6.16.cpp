@@ -34,6 +34,38 @@ public:
         }
         return true;
     }
+
+    /** @IDEA
+     *  Now, we have an idea.
+     *  c.f. https://leetcode.com/submissions/detail/252093367/ 
+     */
+    bool IsValidSudoku2(const vector<vector<int>>& board)
+    {
+      // a count board
+      // - level 0 to count row duplicate
+      // - level 1 to count col duplicate
+      // - level 2 to count subarray duplicate
+      int cntboard[3][9][9] = {{{0}}};
+
+      for (int i = 0; i != 9; ++i)
+      {
+        for (int j = 0; j != 9; ++j)
+        {
+          if (board[i][j] == 0) continue;
+          int num = board[i][j] - 1;
+
+          // count duplicates
+          if (++cntboard[0][i][num] > 1)
+            return false;
+          if (++cntboard[1][j][num] > 1)
+            return false;
+          if (++cntboard[2][(i/3*3) + (j/3)][num] > 1)
+            return false;
+        }
+      }
+      return true;
+    }
+    
 private:
     // checkers
     bool IsValidRow(const vector<int>& row) {

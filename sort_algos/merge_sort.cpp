@@ -50,6 +50,44 @@ vector<int> Merge(const vector<int>& left, const vector<int>& right) {
     return ret;
 }
 
+
+// in-place merge sort
+// c.f. http://www.voidcn.com/article/p-wdwozndw-gn.html
+namespace inplace
+{
+/// Merge two sorted range [beg, mid), [mid, end).
+void Merge(vector<int>& arr, int beg, int mid, int end)
+{
+  for (int i = beg, j = mid; i < mid && j < end;)
+  {
+    if (arr[i] > arr[j])
+    {
+      std::swap(arr[i], arr[j]);
+      // rearrange to keep sorted
+      for (int t = j; t > i+1; --t)
+      {
+        std::swap(arr[t], arr[t-1]);
+      }
+      ++mid;
+      ++j;
+    } 
+    ++i;
+  }
+}
+
+/// Inplace merge sort the range [beg, end).
+void MergeSort(vector<int>& arr, int beg, int end)
+{
+  if (end - beg > 1) // need sort
+  {
+    int mid = (beg + end) / 2;
+    MergeSort(arr, beg, mid);
+    MergeSort(arr, mid, end);
+    Merge(arr, beg, mid, end);
+  }
+}
+}
+
 // test
 int main() {
     vector<int> seq = {1,5,67,2,78,8,3,8,2,9,2,9,2,0,2,234,87,23,6,8};

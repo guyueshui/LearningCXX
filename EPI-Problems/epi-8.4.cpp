@@ -1,6 +1,6 @@
 /** @Description
- *  Write a program that takes two cycle-free singly linked lists, and determines
- *  if there exists a node that is common to both lists.
+ *  Write a program that takes two cycle-free singly linked lists, and
+ *  determines if there exists a node that is common to both lists.
  *
  *  For more details: see EPI, p116.
  */
