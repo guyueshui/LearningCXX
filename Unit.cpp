@@ -1,7 +1,39 @@
-#include "Unit.h"
+// A design problem
+// c.f. https://guyueshui.github.io/post/%E5%88%9D%E5%B0%9D-c-%E7%B1%BB%E8%AE%BE%E8%AE%A1/
+
 #include <iostream>
+#include <string>
 #include <algorithm>
 
+class Unit {
+private:
+    using pos = unsigned int; // type alias
+    pos rowIdx;
+    pos colIdx;
+    bool isRC; // is the type `R23C55`
+    void getIdx_RC(std::string); // build index for type 'R23C55'
+    void getIdx_NRC(std::string); // for type 'BC23'
+
+public:
+    // constructor1
+    Unit(pos _r, pos _c) : rowIdx(_r), colIdx(_c) { }
+    // constructor2
+    Unit(std::string);
+
+    // selectors
+    pos getRow() { return rowIdx; }
+    pos getCol() { return colIdx; }
+
+    // modifiers
+    void setRow(pos _r) { rowIdx = _r; }
+    void setCol(pos _c) { colIdx = _c; }
+
+    // utilties
+    void printer(void);
+    void convertor(void);
+};
+
+//============== impl =================
 // global map for quick search
 char MAP[26] = {'A','B','C','D','E','F','G',
                 'H','I','J','K','L','M','N',
@@ -135,4 +167,21 @@ void Unit::convertor() {
             + "C"
             + std::to_string(colIdx) << std::endl;
     }
+}
+
+// test
+int main() {
+    Unit u1(3, 4);
+    u1.printer();
+    u1.setRow(33);
+    u1.setCol(44);
+    u1.printer();
+
+    Unit u2("R99C123");
+    u2.printer();
+    Unit u3("ABF417");
+    u3.printer();
+    u2.convertor();
+    u3.convertor();
+    return 0;
 }
