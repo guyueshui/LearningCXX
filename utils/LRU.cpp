@@ -1,9 +1,10 @@
 // This file implements a simple LRU (Least Recently Used) cache.
 // c.f. https://www.cnblogs.com/cpselvis/p/6272096.html
+//  and https://www.cnblogs.com/kubidemanong/p/10669805.html
 
 /**
  * This LRU cacher use a list to store values, and a map to indexing,
- * so that get() cost amortized O(1), so as put().
+ * to get amortized O(1) cost for get() and put().
  */
 
 #include <iostream>
@@ -14,7 +15,10 @@ template <typename K, typename V>
 class LRUCache 
 {
 public:
-  explicit LRUCache(int capacity_): capacity_(capacity_), time_(0) {}
+  using KeyType = K;
+  using ValueType = V;
+public:
+  explicit LRUCache(int capacity_): capacity_(capacity_) {}
   LRUCache(const LRUCache&) = delete;
   LRUCache& operator=(const LRUCache&) = delete;
   LRUCache(LRUCache&&) = delete;
@@ -22,19 +26,19 @@ public:
   ~LRUCache() = default;
 
 public:
-  V get(const K& key);
-  void put(const K& key, const V& val);
+  ValueType get(const KeyType& key);
+  void put(const KeyType& key, const ValueType& val);
 
 private:
   int capacity_;
-  int time_;
-  std::map<K, typename std::list<V>::iterator> index_;
-  std::list<V> data_;
+  std::map<KeyType, typename std::list<ValueType>::iterator> index_;
+  std::list<ValueType> data_;
 };
 
 //=============== impl ==================
 template <typename K, typename V>
-V LRUCache<K, V>::get(const K& key)
+typename LRUCache<K, V>::ValueType
+LRUCache<K, V>::get(const KeyType& key)
 {
   auto pos = index_.find(key);
   if (pos != index_.end())
@@ -52,7 +56,7 @@ V LRUCache<K, V>::get(const K& key)
 }
 
 template <typename K, typename V>
-void LRUCache<K, V>::put(const K& key, const V& val)
+void LRUCache<K, V>::put(const KeyType& key, const ValueType& val)
 {
   auto pos = index_.find(key);
   if (pos != index_.end())

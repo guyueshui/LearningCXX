@@ -35,6 +35,7 @@ int main()
   } 
   else
   {
+    // robotAtIndex[i]: robot @i is at @robotAtIndex[i] in the map.
     vector<int> robotAtIndex;
     for (size_t i = 0; i != input.size(); ++i)
       robotAtIndex.push_back(i);
