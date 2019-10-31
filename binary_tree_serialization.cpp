@@ -3,6 +3,8 @@
 #include <queue>
 #include <sstream>
 
+#define PATH false
+
 using namespace std;
 
 struct TreeNode
@@ -25,6 +27,7 @@ void Print(TreeNode* root)
 
 class Codec
 {
+#if PATH
 public:
   vector<string> Serialize(TreeNode* root)
   {
@@ -93,6 +96,47 @@ private:
     root->right = do_deserialize(data, idx + 2);
     return root;
   }
+#else
+public:
+  string Serialize(TreeNode* root)
+  {
+    ostringstream os;
+    do_serialize(root, os);
+    return os.str();
+  }
+
+  TreeNode* Deserialize(const string& data)
+  {
+    istringstream is(data);
+    return do_deserialize(is);
+  }
+
+private:
+  void do_serialize(TreeNode* root, ostream& os)
+  {
+    if (root)
+    {
+      os << root->val << ' ';
+      do_serialize(root->left, os);
+      do_serialize(root->right, os);
+    }
+    else
+    {
+      os << '#' << ' ';
+    }
+  }
+
+  TreeNode* do_deserialize(istream& is)
+  {
+    string val;
+    is >> val;
+    if (val == "#") return nullptr;
+    TreeNode* root = new TreeNode(std::stoi(val));
+    root->left = do_deserialize(is);
+    root->right = do_deserialize(is);
+    return root;
+  }
+#endif
 };
 
 // test
