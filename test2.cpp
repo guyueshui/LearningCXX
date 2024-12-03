@@ -3,10 +3,12 @@ using namespace std;
 
 int a=1,j=2;
 int main(){
-    int i=2;
-    void func();
-    func();
-    printf("a=%d,i=%d,j=%d",a,i,j);
+    // int i=2;
+    // void func();
+    // func();
+    // printf("a=%d,i=%d,j=%d",a,i,j);
+    void foo();
+    foo();
     return 0;
 }
 
@@ -17,4 +19,15 @@ void func(){
     if(a<4) func();
     a--,j+=3;
     printf("a=%d,j=%d\n",a,j);
+}
+
+void oom()
+{
+    int a[10000000];
+}
+
+void foo()
+{
+    foo();
+    cout << "hi";
 }

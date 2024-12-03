@@ -12,14 +12,17 @@ using std::endl;
 // sort the `arr` at range [beg, end)
 void select_sort(vector<int>& arr, size_t beg, size_t end) {
     if (end - beg > 1) {
-        size_t max_idx = 0;
+        /**
+         * Review at 2022-07-20: max_idx shoud equal to beg.
+         */
+        size_t max_idx = beg;
         for (auto i = end; i > beg + 1; --i) {
             for (auto j = beg; j < i; ++j) {
                 if (arr[max_idx] < arr[j])
                     max_idx = j;
             }
             std::swap(arr[max_idx], arr[i - 1]);
-            max_idx = 0;
+            max_idx = beg;
         }
     }
 }

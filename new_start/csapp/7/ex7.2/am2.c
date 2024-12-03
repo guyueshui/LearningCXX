@@ -1,0 +1,5 @@
+double x = 1.0;
+int p2()
+{
+    return 0;
+}
