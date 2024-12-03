@@ -1,0 +1,1 @@
+add_executable(ttlink a.c b.c)
