@@ -3,7 +3,6 @@
 // #pragma pack(show)
 
 #include "include/utils.h"
-#include <bits/chrono.h>
 #include <chrono>
 #include <numeric>
 #include <string>
@@ -54,6 +53,10 @@ void foo()
 int main(int argc, char** argv)
 {
     foo();
+    if (argc < 2) {
+        printf("usage: %s <int number>\n", argv[0]);
+        return 1;
+    }
     const int N = std::stoi(argv[1]);
     const int RANGE = N / 10;
 
