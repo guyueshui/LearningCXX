@@ -93,7 +93,7 @@ int main()
     srand(time(NULL));
     ListNode head(345);
     ListNode* p = &head;
-    for (int i = 0; i < 1e6; ++i)
+    for (int i = 0; i < 1e5; ++i)
     {
         int x = rand() % 99;
         // auto node = ListNode(x);
@@ -105,21 +105,19 @@ int main()
 
 
     TimeCounter t;
-
-    t.reset();
     ListNode* ihead = ReverseList(&head);
-    printf("iterative way cost %d us.\n", t.elapsed<std::chrono::microseconds>());
-    // lhead->print();
+    printf("iterative way cost %lu us.\n", t.elapsed<std::chrono::microseconds>());
+    // ihead->print();
 
     ReverseListFunctor func;
     t.reset();
     ListNode* fhead = func(ihead);
-    printf("functor way cost %d us.\n", t.elapsed<std::chrono::microseconds>());
+    printf("functor way cost %lu us.\n", t.elapsed<std::chrono::microseconds>());
     // fhead->print();
 
-    // t.reset();
-    // ListNode* rhead = ReverseListRecursive(fhead);
-    // printf("recursive way cost %d us.\n", t.elapsed<std::chrono::microseconds>());
+    t.reset();
+    ListNode* rhead = ReverseListRecursive(fhead);
+    printf("recursive way cost %lu us.\n", t.elapsed<std::chrono::microseconds>());
     // rhead->print();
 
     return 0;

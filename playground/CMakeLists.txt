@@ -46,8 +46,8 @@ endif()
 
 # add_definitions(-DGLOG_ON)
 
-# 生成编译命令文件，给 YCM 使用
-# set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+# 生成编译命令文件，给 clangd 使用
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 add_compile_options(-g)
 
