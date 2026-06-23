@@ -7,7 +7,8 @@
 #include <typeinfo>
 #include <chrono>
 
-namespace chrono = std::chrono;
+namespace utils {
+
 
 template <typename T>
 void print_vector(const std::vector<T>& v)
@@ -29,23 +30,25 @@ void print_object_size(T t)
 class TimeCounter
 {
 private:
-    chrono::time_point<chrono::steady_clock> start_;
+    std::chrono::time_point<std::chrono::steady_clock> start_;
 
 public:
-    TimeCounter(): start_(chrono::steady_clock::now()) {}
+    TimeCounter(): start_(std::chrono::steady_clock::now()) {}
     void reset()
     {
-        start_ = chrono::steady_clock::now();
+        start_ = std::chrono::steady_clock::now();
     }
 
     template <typename T>
     long elapsed()
     {
-        auto past_time = chrono::steady_clock::now() - start_;
-        auto x = chrono::duration_cast<T>(past_time);
+        auto past_time = std::chrono::steady_clock::now() - start_;
+        auto x = std::chrono::duration_cast<T>(past_time);
         return x.count();
     }
 };
+
+} // namspace utils
 
 
 #endif // __UTILS_H__

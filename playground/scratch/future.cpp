@@ -10,6 +10,9 @@
 #include <thread>
 #include <future>
 
+using namespace utils;
+using namespace std;
+
 struct A {
     double a;
     char b;

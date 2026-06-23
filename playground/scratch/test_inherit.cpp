@@ -1,5 +1,5 @@
-#include <iostream>
 #include "include/macros.h"
+#include "vczh_test.h"
 
 using namespace std;
 
@@ -18,9 +18,10 @@ private:
 };
 
 
-int main() {
+TEST_CASE(inherit) {
     Derived d;
     Base* p = &d;
-    cout << p->foo() << endl;
-    return 0;
+    TEST_ASSERT(p->foo() == 3);
 }
+
+int main() { return 0; }

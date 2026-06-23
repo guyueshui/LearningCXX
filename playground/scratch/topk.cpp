@@ -6,9 +6,8 @@
 * Description:      Find the top k small elements of a sequence.
 *****************************************************************************/
 
-#include <iostream>
+#include "utils.h"
 #include <vector>
-#include <exception>
 
 using std::vector;
 
@@ -74,18 +73,12 @@ vector<int> FindTopK(vector<int>& arr, size_t k)
 }
 
 
-void PrintVector(const vector<int>& arr)
-{
-    for (auto e : arr) std::cout << e << ' ';
-    std::cout << std::endl;
-}
-
 
 int main()
 {
     vector<int> arr {12,234,23423,42,34,2,435,123,5676,8787, 912, 21};
-    PrintVector(arr);
+    utils::print_vector(arr);
     auto ret = FindTopK(arr, 5);
-    PrintVector(ret);
+    utils::print_vector(ret);
     return 0;
 }

@@ -6,11 +6,7 @@
 * Description:      Tranverse a tree. 
 *****************************************************************************/
 
-#include <ios>
 #include <iostream>
-#include <iterator>
-#include <memory>
-#include <type_traits>
 #include <vector>
 #include <stack>
 #include <queue>
@@ -84,22 +80,31 @@ vector<int> inorder_tranverse(TreeNode* root)
     return ret;
 }
 
-// 后序遍历，当前有误
+// 后序遍历
 vector<int> postorder_tranverse(TreeNode* root)
 {
     vector<int> ret;
     if (!root) return ret;
     stack<TreeNode*> s;
-    s.push(root);
-    while (!s.empty())
+    // 类似中序，但需要一个额外的指针记录访问过的右孩子
+    // 否则会形成死循环
+    for (TreeNode *cur = root, *last=nullptr; cur || !s.empty(); )
     {
-        TreeNode* n = s.top();
-        if (n->right) s.push(n->right);
-        if (n->left) s.push(n->left);
-        if (!n->left && !n->right)
+        while (cur)
         {
-            ret.push_back(n->val);
+            s.push(cur);
+            cur = cur->left;
+        }
+        TreeNode* t = s.top();
+        if (!t->right || t->right == last)
+        {
             s.pop();
+            ret.push_back(t->val);
+            last = t;
+        }
+        else
+        {
+            cur = t->right;
         }
     }
     return ret;
@@ -187,8 +192,8 @@ int main()
 
     print_vector(loop::preorder_tranverse(arr));
     print_vector(loop::inorder_tranverse(arr));
-    print_vector(loop::layer_tranverse(arr));
-    // print_vector(loop::postorder_tranverse(arr));
+    print_vector(loop::postorder_tranverse(arr));
+    // print_vector(loop::layer_tranverse(arr));
 
     cout << "\n-------- below is recursive ----------\n";
     print_vector(recursive::preorder_tranverse(arr));

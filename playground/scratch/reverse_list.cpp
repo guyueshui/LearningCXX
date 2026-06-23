@@ -6,10 +6,13 @@
 * Description:      Reverse a linked list.
 *****************************************************************************/
 #include "include/utils.h"
+#include <cassert>
 #include <chrono>
 #include <cstdio>
 #include <time.h>
 #include <stdlib.h>
+
+using utils::TimeCounter;
 
 
 struct ListNode
@@ -30,6 +33,41 @@ struct ListNode
             printf("\n");
         }
     }
+};
+
+class LinkListCreator {
+public:
+LinkListCreator(size_t size): size_(size), head_(nullptr) {}
+~LinkListCreator() {
+    while (head_) {
+        auto tmp = head_->next;
+        delete head_;
+        head_ = tmp;
+    }
+}
+ListNode* Head() {
+    if (!head_) {
+        assert(inner_create());
+    }
+    return head_;
+}
+size_t Size() const { return size_; }
+
+private:
+    bool inner_create() {
+        srand(time(NULL));
+        head_ = new ListNode(345);
+        ListNode* p = head_;
+        for (int i = 0; i < size_; ++i)
+        {
+            p->next = new ListNode(rand() % 99);
+            p = p->next;
+        }
+        return true;
+    }
+
+    ListNode* head_;
+    size_t size_;
 };
 
 
@@ -90,35 +128,24 @@ struct ReverseListFunctor
 
 int main()
 {
-    srand(time(NULL));
-    ListNode head(345);
-    ListNode* p = &head;
-    for (int i = 0; i < 1e5; ++i)
-    {
-        int x = rand() % 99;
-        // auto node = ListNode(x);
-        // p->next = &node;
-        p->next = new ListNode(x);
-        p = p->next;
-    }
-    // head.print();
-
+    LinkListCreator c(15);
+    ListNode* head = c.Head();
 
     TimeCounter t;
-    ListNode* ihead = ReverseList(&head);
+    ListNode* ihead = ReverseList(head);
     printf("iterative way cost %lu us.\n", t.elapsed<std::chrono::microseconds>());
-    // ihead->print();
+    if (c.Size() <= 15) ihead->print();
 
     ReverseListFunctor func;
     t.reset();
     ListNode* fhead = func(ihead);
     printf("functor way cost %lu us.\n", t.elapsed<std::chrono::microseconds>());
-    // fhead->print();
+    if (c.Size() <= 15) fhead->print();
 
     t.reset();
     ListNode* rhead = ReverseListRecursive(fhead);
     printf("recursive way cost %lu us.\n", t.elapsed<std::chrono::microseconds>());
-    // rhead->print();
+    if (c.Size() <= 15) rhead->print();
 
     return 0;
 }

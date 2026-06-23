@@ -21,7 +21,7 @@ int main()
     }
     // io ends.
     std::cout << "the vector is ";
-    print_vector(arr);
+    utils::print_vector(arr);
 
     TreeNode* root = build_binary_tree(arr);
     std::cout << "\nis_balanced_tree " << is_balanced_tree_bottom_up(root) << std::endl;
