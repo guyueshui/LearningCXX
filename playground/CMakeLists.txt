@@ -2,6 +2,11 @@ cmake_minimum_required(VERSION 3.20)
 project(scratch)
 
 message(STATUS "CMake version: " ${CMAKE_VERSION})
+
+# use clang
+set(CMAKE_C_COMPILER clang)
+set(CMAKE_CXX_COMPILER clang++)
+
 if(NOT ${CMAKE_VERSION} VERSION_LESS "3.2")
     set(CMAKE_CXX_STANDARD 17)
     set(CMAKE_CXX_STANDARD_REQUIRED ON)
