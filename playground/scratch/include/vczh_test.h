@@ -3,8 +3,7 @@
 
 #pragma once
 
-#define __STR_IMPL(x) #x
-#define STR(x) __STR_IMPL(x)
+#include "macros.h"
 
 #define TEST_CASE(name)                                                        \
   extern void TEST_CASE_##name();                                              \

@@ -57,13 +57,21 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 add_compile_options(-g)
 
 #设置输出目录
-# set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-# set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/build)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/build)
 # set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/build/)
 
 #加入包含目录
 include_directories(${CMAKE_SOURCE_DIR}/scratch/include) 
+
+
+# 接口库，用于汇聚通用配置
+add_library(_fakelib INTERFACE)
+target_compile_definitions(_fakelib INTERFACE ASIO_STANDALONE SOME_MACRO) # 宏定义
+target_compile_options(_fakelib INTERFACE -g) # 编译选项
+target_link_directories(_fakelib INTERFACE some_dir1 dir2) # 链接库搜索路径
+target_link_options(_fakelib INTERFACE -Wl,-rpath=/some/path) # 传给 linker 的选项
 
 
 #静态库目录
@@ -72,23 +80,11 @@ include_directories(${CMAKE_SOURCE_DIR}/scratch/include)
 #logger lib 
 #add_subdirectory(log)
 
-file(GLOB demo_srcs scratch/*.cpp)
-message(STATUS "listing source...\n" list ${demo_srcs})
-foreach(srcfile IN LISTS demo_srcs)
-    get_filename_component(elfname ${srcfile} NAME_WE)
-    message(STATUS "compile ${srcfile} ..to.. ${elfname}")
-    add_executable(${elfname} ${srcfile})
-endforeach()
-
-# 引用了自定义头文件的要带上其源文件一起编译
-aux_source_directory(scratch/include lib_srcs)
-target_sources(balance-tree PUBLIC ${lib_srcs})
-
-
 # aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src SRCS) #加入目录下所有源码
 # add_executable(demo ${SRCS}) #生成可执行文件
 # target_link_libraries(demo logger)  #链接 logger 库
 
+add_subdirectory(scratch)
 
 # aux_source_directory(test_link test_link_src)
 # add_executable(test_link ${test_link_src})

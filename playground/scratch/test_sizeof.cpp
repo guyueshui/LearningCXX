@@ -1,24 +1,12 @@
+#include "macros.h"
 #include <vector>
 #include <stdio.h>
 #include <stdint.h>
 #include <typeinfo>
-#include <cstring>
 #include <atomic>
 #include <memory>
 
 using namespace std;
-
-#define PLACEHOLDER printf("--------------------------------------------------\n")
-
-#define PRINT_SIZE(T) do { \
-    printf("type %s has size %lu\n", typeid(T).name(), sizeof(T)); \
-} while (0)
-
-#define PRINT_FUNC(tag) do { \
-    if (strlen(tag) > 0) { \
-        printf("__%s__", tag); \
-    } \
-    printf("call %s\n", __func__); } while (0)
 
 template<typename T>
 void PrintSize(T t)

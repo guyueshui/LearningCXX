@@ -47,6 +47,8 @@ public:
     }
 };
 
+char* rand_str(char* str, const size_t len);
+
 } // namspace utils
 
 

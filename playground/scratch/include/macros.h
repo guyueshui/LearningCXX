@@ -4,18 +4,36 @@
 #include <cstring>
 #include <stdint.h>
 #include <stdio.h>
+#include <string>
 #include <typeinfo>
 #include <vector>
+
+// name to string
+#define __STR_IMPL(x) #x
+#define STR(x) __STR_IMPL(x)
+
+#ifdef __GNUC__
+  #include <cxxabi.h>
+#endif
+
+inline std::string demangle(const char* name) {
+#ifdef __GNUC__
+  int status = 0;
+  char* p = abi::__cxa_demangle(name, nullptr, nullptr, &status);
+  std::string ret = (status == 0 && p) ? p : name;
+  free(p);
+  return ret;
+#endif
+  return name;
+}
 
 #define PLACEHOLDER                                                            \
   printf("--------------------------------------------------\n")
 
-// name to string
-#define STR(x) #x
-
 #define PRINT_SIZE(T)                                                          \
   do {                                                                         \
-    printf("type %s has size %lu\n", typeid(T).name(), sizeof(T));             \
+    printf("type %s has size %zu\n", demangle(typeid(T).name()).c_str(),       \
+           sizeof(T));                                                         \
   } while (0)
 
 #define PRINT_FUNC(tag)                                                        \
