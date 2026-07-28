@@ -11,4 +11,12 @@ aux_source_directory(include lib_srcs)
 target_sources(balance-tree PUBLIC ${lib_srcs})
 target_link_libraries(vtest utils)
 
+# use asan to detect memory leak
+target_compile_options(test_my_vector PRIVATE
+    -O0 -g
+    -fsanitize=address
+    -fno-omit-frame-pointer
+)
+target_link_options(test_my_vector PRIVATE -fsanitize=address)
+
 add_subdirectory(include)
