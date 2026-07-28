@@ -13,6 +13,12 @@ TEST_CASE(foo) {
     std::cout << "running test ...\n";
     TEST_ASSERT(1==2);
     std::cout << "running end ...\n";
+    std::vector<int> v;
+    v.max_size();
+    v.capacity();
+    v.push_back(1);
+    int a = 1;
+    v.push_back(a);
 }
 
 TEST_CASE(bar) {

@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "LaunchSinle",
+            "name": "LaunchSingle",
             "type": "lldb",
             "request": "launch",
             "program": "${workspaceRoot}/build/${fileBasenameNoExtension}",
