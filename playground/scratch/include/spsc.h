@@ -21,9 +21,11 @@ namespace yychi {
 template <typename T>
 class SPSCQueue {
 public:
+  // clang-format off
   typedef       T   value_type;
   typedef       T&  reference;
   typedef const T&  const_reference;
+  // clang-format on
 
 public:
   SPSCQueue() = default;
@@ -46,12 +48,13 @@ public:
     head_ = tail_ = 0;
   }
 
+  // clang-format off
   size_t  size() const;
   bool    empty() const;
   bool    full() const;
 
-  template<class ...Args>
-  void    emplace(Args&& ...args);
+  template<class... Args>
+  void    emplace(Args&&... args);
 
   void    push(const T& value) { emplace(value); }
   void    push(T&& value)      { emplace(std::move(value)); }
@@ -62,6 +65,7 @@ public:
 
   reference         back();
   const_reference   back() const;
+  // clang-format on
 
 private:
   void __destruct1(size_t idx) {
@@ -126,8 +130,8 @@ SPSCQueue<T>& SPSCQueue<T>::operator=(SPSCQueue&& rhs) {
 }
 
 template <typename T>
-template <class ...Args>
-void SPSCQueue<T>::emplace(Args&& ...args) {
+template <class... Args>
+void SPSCQueue<T>::emplace(Args&&... args) {
   size_t t = tail_.load(std::memory_order_relaxed);
   size_t next = (t + 1) % capacity_;
   if (next == head_.load(std::memory_order_acquire)) {
@@ -172,35 +176,31 @@ size_t SPSCQueue<T>::size() const {
 }
 
 template <typename T>
-typename SPSCQueue<T>::reference
-SPSCQueue<T>::back() {
+typename SPSCQueue<T>::reference SPSCQueue<T>::back() {
   assert(!empty());
   size_t t = tail_.load(std::memory_order_acquire);
   return data_[(t + capacity_ - 1) % capacity_];
 }
 
 template <typename T>
-typename SPSCQueue<T>::const_reference
-SPSCQueue<T>::back() const {
+typename SPSCQueue<T>::const_reference SPSCQueue<T>::back() const {
   assert(!empty());
   size_t t = tail_.load(std::memory_order_acquire);
   return data_[(t + capacity_ - 1) % capacity_];
 }
 
 template <typename T>
-typename SPSCQueue<T>::reference
-SPSCQueue<T>::front() {
+typename SPSCQueue<T>::reference SPSCQueue<T>::front() {
   assert(!empty());
   size_t h = head_.load(std::memory_order_relaxed);
   return data_[h];
 }
 
 template <typename T>
-typename SPSCQueue<T>::const_reference
-SPSCQueue<T>::front() const {
+typename SPSCQueue<T>::const_reference SPSCQueue<T>::front() const {
   assert(!empty());
   size_t h = head_.load(std::memory_order_relaxed);
   return data_[h];
 }
 
-} // namespace yychi
+}  // namespace yychi
