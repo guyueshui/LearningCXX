@@ -1,3 +1,4 @@
+#include "macros.h"
 #include "vczh_test.h"
 #include "utils.h"
 #include <algorithm>
@@ -8,6 +9,7 @@
 #include <vector>
  
 int main() { return 0; }
+using std::cout, std::endl;
  
 TEST_CASE(foo) {
     std::cout << "running test ...\n";
@@ -37,6 +39,8 @@ TEST_CASE(bar) {
     std::vector<int> b{1,2,3};
     std::push_heap(b.begin(), b.end(), [](int a, int b){return a < b;});
     std::sort_heap(b.begin(), b.end());
+    PLACEHOLDER;
+    cout << (2 - 3) % 7 << endl;
 }
 
 TEST_CASE(scanf) {
@@ -55,7 +59,6 @@ TEST_CASE(rand_str) {
 }
 
 TEST_CASE(array) {
-    using std::cout, std::endl;
     int arr[6]={1,2,3,4,5,6};
     // int &refs[6]=arr;
     int (&arrRef)[6]=arr;

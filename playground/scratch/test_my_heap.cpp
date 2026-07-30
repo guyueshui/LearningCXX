@@ -1,10 +1,10 @@
 #include "my-heap.h"
 #include "vczh_test.h"
 #include "utils.h"
+#include "test_utils.h"
 #include <algorithm>
 #include <functional>
 #include <queue>
-#include <random>
 #include <vector>
 
 int main() { return 0; }
@@ -123,19 +123,7 @@ bool VectorEqual(const vector<T>& a, const vector<T>& b) {
 }
 
 
-// cf. https://oi-wiki.org/misc/random/
-std::random_device rd;
-std::mt19937_64 rng(rd());
-
-vector<int> GenerateVec(int a, int b, size_t n) {
-    std::uniform_int_distribution<int> dist(a, b);
-    vector<int> ret;
-    ret.reserve(n);
-    while (n--) {
-        ret.push_back(dist(rng));
-    }
-    return ret;
-}
+using utils::GenerateVec;
 
 
 TEST_CASE(make_heap) {

@@ -5,6 +5,7 @@
 #include <vector>
 #include <typeinfo>
 #include <chrono>
+#include <thread>
 
 namespace utils {
 
@@ -48,6 +49,16 @@ public:
 };
 
 char* rand_str(char* str, const size_t len);
+
+/* Set a name to this thread.
+ * `name` must be no longer than 16 charaters (including null terminator).
+ */
+bool set_thread_name(const char* name);
+
+/* Set a name to thread.
+ * `name` must be no longer than 16 charaters (including null terminator).
+ */
+bool set_thread_name(std::thread* thread, const char* name);
 
 } // namspace utils
 

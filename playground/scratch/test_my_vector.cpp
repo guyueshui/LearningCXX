@@ -116,7 +116,7 @@ TEST_CASE(yychi_vector) {
 
     {
         yychi::vector<int> vec;
-        auto v = GenerateVec(-1000, 1000, 1000);
+        auto v = utils::GenerateVec(-1000, 1000, 1000);
         for (int e : v) {
             vec.push_back(e);
         }

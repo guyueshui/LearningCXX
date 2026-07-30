@@ -104,6 +104,9 @@ public:
     iterator erase(const_iterator pos) { return erase(pos, pos + 1); }
     iterator erase(const_iterator first, const_iterator last);
     void push_back(const T& e) { emplace_back(e); }
+    /* This is a member function of class template, not a function template!
+     * So here `T&&` is not a perfect-forward.
+     */
     void push_back(T&& e) { emplace_back(std::move(e)); }
 
     template <class ...Args>
@@ -179,6 +182,7 @@ vector<T>::vector(size_t n) {
 template <typename T>
 vector<T>::vector(size_t n, const T& e) {
     // 先分配内存，不调用构造，再用 placement new 原地拷贝构造
+    // operator new/delete 不会调用构造/析构函数，只管理原始内存！
     data_ = static_cast<T*>(::operator new(sizeof(T) * n));
     size_t i = 0;
     try {

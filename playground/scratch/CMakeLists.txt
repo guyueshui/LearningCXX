@@ -12,11 +12,15 @@ target_sources(balance-tree PUBLIC ${lib_srcs})
 target_link_libraries(vtest utils)
 
 # use asan to detect memory leak
-target_compile_options(test_my_vector PRIVATE
+add_library(_asan INTERFACE)
+target_compile_options(_asan INTERFACE
     -O0 -g
     -fsanitize=address
     -fno-omit-frame-pointer
 )
-target_link_options(test_my_vector PRIVATE -fsanitize=address)
+target_link_options(_asan INTERFACE -fsanitize=address)
+
+target_link_libraries(test_my_vector PRIVATE _asan)
+target_link_libraries(test_my_spsc PRIVATE _asan)
 
 add_subdirectory(include)
