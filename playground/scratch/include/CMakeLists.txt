@@ -1,1 +1,1 @@
-add_library(utils SHARED utils.cpp)
+add_library(utils SHARED utils.cpp my-timer.cpp)
