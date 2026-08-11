@@ -23,5 +23,6 @@ target_link_options(_asan INTERFACE -fsanitize=address)
 target_link_libraries(test_my_vector PRIVATE _asan)
 target_link_libraries(test_my_spsc PRIVATE _asan)
 target_link_libraries(test_timer PRIVATE utils)
+target_link_libraries(test_logger PRIVATE utils)
 
 add_subdirectory(include)

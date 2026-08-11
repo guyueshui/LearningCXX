@@ -33,4 +33,12 @@ bool set_thread_name(const char* name) {
   return pthread_setname_np(pthread_self(), name) == 0;
 }
 
+bool get_local_time(time_t t, struct tm *out) {
+#ifdef _WIN32
+  return localtime_s(out, &t) == 0;
+#else
+  return localtime_r(&t, out) != nullptr;
+#endif
+}
+
 } // namespace utils
