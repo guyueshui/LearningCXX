@@ -1,4 +1,4 @@
-#include "my-heap.h"
+#include "my-heap.hpp"
 #include "vczh_test.h"
 #include "utils.h"
 #include "test_utils.h"

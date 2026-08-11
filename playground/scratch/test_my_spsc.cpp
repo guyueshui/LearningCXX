@@ -1,5 +1,5 @@
-#include "my-vector.h"
-#include "spsc.h"
+#include "my-vector.hpp"
+#include "spsc.hpp"
 #include "test_utils.h"
 #include "vczh_test.h"
 
@@ -116,7 +116,7 @@ TEST_CASE(thread) {
           produced.fetch_add(1, std::memory_order_relaxed);
           break;
         } catch (std::exception& e) {
-          // printf("%s\n", e.what());
+          printf("%s\n", e.what());
         }
       }
     }
@@ -126,7 +126,7 @@ TEST_CASE(thread) {
     while (consumed.load(std::memory_order_relaxed) < N) {
       if (q.empty()) continue;
       size_t v = q.front();
-      // printf("consume %zu\n", v);
+      printf("consume %zu\n", v);
       q.pop();
 
       TEST_ASSERT(!seen[v]);

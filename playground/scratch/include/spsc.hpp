@@ -14,10 +14,28 @@
 
 /*
  当 capacity 是 2 的幂，可以用 x & (capacity-1) 模拟取余操作。
+ 这比取模运算要快。
  */
 
 namespace yychi {
 
+namespace details {
+
+inline size_t next_power_of_2(size_t n) {
+  size_t p = 1;
+  while (p < n) {
+    p <<= 1;
+  }
+  return p;
+}
+
+}
+
+
+/* A Single-Producer-Single-Consumer queue with fixed capacity.
+ * 
+ * Capacity will be enlarged to the nearest power of 2 for better performance. 
+ */
 template <typename T>
 class SPSCQueue {
 public:
@@ -76,7 +94,7 @@ private:
   void __destruct_all() {
     size_t h = head_.load(std::memory_order_relaxed);
     size_t t = tail_.load(std::memory_order_relaxed);
-    for (size_t i = h; i != t; i = (i + 1) % capacity_) {
+    for (size_t i = h; i != t; i = __mask(i + 1)) {
       __destruct1(i);
     }
   }
@@ -93,6 +111,9 @@ private:
     x.tail_.store(h, order);
   }
 
+  // This is equivalent to `i % capacity_'.
+  size_t __mask(size_t i) const { return i & (capacity_ - 1); }
+
 private:
   T* data_ = nullptr;
   size_t capacity_ = 0;
@@ -103,11 +124,12 @@ private:
 // implements ###########################################
 template <typename T>
 SPSCQueue<T>::SPSCQueue(size_t capacity) {
-  if (capacity < 2) {
-    throw std::invalid_argument("capacity must >= 2");
+  if (capacity <= 2) {
+    capacity_ = 2;
+  } else {
+    capacity_ = details::next_power_of_2(capacity);
   }
-  data_ = static_cast<T*>(::operator new(sizeof(T) * capacity));
-  capacity_ = capacity;
+  data_ = static_cast<T*>(::operator new(sizeof(T) * capacity_));
 }
 
 template <typename T>
@@ -133,7 +155,7 @@ template <typename T>
 template <class... Args>
 void SPSCQueue<T>::emplace(Args&&... args) {
   size_t t = tail_.load(std::memory_order_relaxed);
-  size_t next = (t + 1) % capacity_;
+  size_t next = __mask(t + 1);
   if (next == head_.load(std::memory_order_acquire)) {
     throw std::runtime_error("push on full queue!");
   }
@@ -149,7 +171,7 @@ void SPSCQueue<T>::pop() {
   }
   size_t h = head_.load(std::memory_order_relaxed);
   __destruct1(h);
-  head_.store((h + 1) % capacity_, std::memory_order_release);
+  head_.store(__mask(h + 1), std::memory_order_release);
 }
 
 // usually used in consumer
@@ -165,28 +187,28 @@ template <typename T>
 bool SPSCQueue<T>::full() const {
   size_t h = head_.load(std::memory_order_acquire);
   size_t t = tail_.load(std::memory_order_relaxed);
-  return (t + 1) % capacity_ == h;
+  return __mask(t + 1) == h;
 }
 
 template <typename T>
 size_t SPSCQueue<T>::size() const {
   size_t h = head_.load(std::memory_order_acquire);
   size_t t = tail_.load(std::memory_order_acquire);
-  return (t + capacity_ - h) % capacity_;
+  return __mask(t + capacity_ - h);
 }
 
 template <typename T>
 typename SPSCQueue<T>::reference SPSCQueue<T>::back() {
   assert(!empty());
   size_t t = tail_.load(std::memory_order_acquire);
-  return data_[(t + capacity_ - 1) % capacity_];
+  return data_[__mask(t + capacity_ - 1)];
 }
 
 template <typename T>
 typename SPSCQueue<T>::const_reference SPSCQueue<T>::back() const {
   assert(!empty());
   size_t t = tail_.load(std::memory_order_acquire);
-  return data_[(t + capacity_ - 1) % capacity_];
+  return data_[__mask(t + capacity_ - 1)];
 }
 
 template <typename T>
