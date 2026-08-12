@@ -1,8 +1,8 @@
 #include "my-timer.h"
+#include "simple_log.h"
 #include "utils.h"
 
 #include <chrono>
-#include <cstdio>
 #include <mutex>
 #include <thread>
 
@@ -36,7 +36,7 @@ void Timer::createThreadOnNeed() {
 }
 
 void Timer::threadProc() {
-  printf(LOGTAG "Timer thread started\n");
+  LOG_INFO(LOGTAG "Timer thread started");
   utils::set_thread_name("TimerThread");
   vector<Item> items;
   TimePoint now;
@@ -79,7 +79,8 @@ void Timer::threadProc() {
       owners_to_del_.clear();
     }
   }
-  printf(LOGTAG "Timer thread exit\n");
+  printf("call logger info in timer thread exit\n");
+  LOG_INFO(LOGTAG "Timer thread exit");
 }
 
 unsigned Timer::Register(TimerFunc&& f, int interval_ms, unsigned timeout_ms, bool repeated,
@@ -157,8 +158,8 @@ void Timer::execTimers(TimePoint now, vector<Item>& items) {
       auto elapsed_ms = chrono::duration_cast<chrono::milliseconds>(now - itm.next_run).count();
       if (elapsed_ms > itm.timeout_ms) {
         valid = false;
-        fprintf(stderr, LOGTAG "timer %u(tmout=%ums) is skipped, %ldms past scheduled run time\n",
-                itm.id, itm.timeout_ms, elapsed_ms);
+        LOG_ERROR(LOGTAG "timer %u(tmout=%ums) is skipped, %ldms past scheduled run time", itm.id,
+                  itm.timeout_ms, elapsed_ms);
       }
     }
     if (valid) {

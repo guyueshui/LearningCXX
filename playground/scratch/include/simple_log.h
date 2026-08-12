@@ -1,16 +1,19 @@
 #pragma once
 
+#include "macros.h"
 #include "utils.h"
+#include <array>
 #include <chrono>
 #include <cstdarg>
 #include <cstdio>
 #include <filesystem>
 #include <fstream>
 #include <memory>
+#include <optional>
 #include <string>
 #include <string_view>
+#include <unordered_map>
 #include <utility>
-#include <vector>
 
 
 namespace yychi {
@@ -18,6 +21,7 @@ namespace yychi {
 namespace fs = std::filesystem;
 
 enum class LogLevel { TRACE, DEBUG, INFO, WARN, ERROR, FATAL, OFF };
+enum SinkSlot : unsigned { CONSOLE = 0, FILE, FILE_ROT, _MAX };
 
 namespace details {
 
@@ -77,25 +81,26 @@ private:
 
 }  // namespace details
 
-class SimpleLogger {
+class LoggerImpl {
 public:
   typedef std::chrono::system_clock::time_point TimePoint;
   typedef std::unique_ptr<details::Sink> SinkPtr;
 
 public:
-  SimpleLogger() : SimpleLogger(LogLevel::INFO) {}
-  SimpleLogger(LogLevel l);
-  SimpleLogger(const SimpleLogger&) = delete;
-  SimpleLogger(SimpleLogger&&) = delete;
-  ~SimpleLogger();
+  LoggerImpl() : LoggerImpl(LogLevel::TRACE) {}
+  LoggerImpl(LogLevel l);
+  LoggerImpl(const LoggerImpl&) = delete;
+  LoggerImpl(LoggerImpl&&) = delete;
+  ~LoggerImpl();
 
-  SimpleLogger& operator=(const SimpleLogger&) = delete;
-  SimpleLogger& operator=(SimpleLogger&&) = delete;
+  LoggerImpl& operator=(const LoggerImpl&) = delete;
+  LoggerImpl& operator=(LoggerImpl&&) = delete;
 
   // template <class... Args>
   // void Log(LogLevel lv, Args&&... args);
 
   void Log(LogLevel level, const char* file, int lineno, const char* fmt, ...);
+  // void Log(LogLevel level, const char* file, int lineno, const char* fmt, va_list ap);
 
   void SetLogLevel(LogLevel lv) { level_ = lv; }
   LogLevel GetLogLevel() const { return level_; }
@@ -113,17 +118,33 @@ public:
   void WriteLog(std::string&& msg, int fd=0);
 
   bool AddConsoleSink() {
-    sinks_.push_back(std::make_unique<details::ConsoleSink>());
+    auto& x = sinks_[SinkSlot::CONSOLE];
+    if (x) {
+      return false;
+    }
+    x.emplace(std::make_unique<details::ConsoleSink>());
     return true;
   }
 
+  void RemoveSink(SinkSlot slot) {
+    sinks_.at(slot).reset();
+  }
+
   bool AddFileSink(const std::string& filepath, size_t bufsize=0) {
-    sinks_.push_back(std::make_unique<details::FileSink>(filepath, bufsize));
+    auto& x = sinks_[SinkSlot::FILE];
+    if (x) {
+      return false;
+    }
+    x.emplace(std::make_unique<details::FileSink>(filepath, bufsize));
     return true;
   }
 
   bool AddRotateFileSink(const std::string& filepath, size_t bufsize, size_t maxsize, unsigned maxkeep) {
-    sinks_.push_back(std::make_unique<details::RotateFileSink>(filepath, bufsize, maxsize, maxkeep));
+    auto& x = sinks_[SinkSlot::FILE_ROT];
+    if (x) {
+      return false;
+    }
+    x.emplace(std::make_unique<details::RotateFileSink>(filepath, bufsize, maxsize, maxkeep));
     return true;
   }
 
@@ -138,14 +159,14 @@ private:
   };
 
   struct ProcThread : public utils::WorkThreadT<LogRecord> {
-    ProcThread(SimpleLogger* owner) : owner_(owner) {}
+    ProcThread(LoggerImpl* owner) : owner_(owner) {}
     void OnDispatchWorkItem(LogRecord&) override;
     bool OnThreadInitialize(const char* name) override {
       return WorkThreadT::OnThreadInitialize("log_writer");
     }
 
   private:
-    SimpleLogger* owner_;
+    LoggerImpl* owner_;
   };
 
   static constexpr const char* LevelText(LogLevel lv);
@@ -154,31 +175,105 @@ private:
 
 private:
   LogLevel level_;
-  std::vector<SinkPtr> sinks_;
-
+  std::array<std::optional<SinkPtr>, SinkSlot::_MAX> sinks_;
   std::unique_ptr<ProcThread> proc_thd_;
+};
+
+
+/* Singleton to manager loggers. */
+class Logger : public utils::Singleton<Logger> {
+public:
+  typedef std::unique_ptr<LoggerImpl> LoggerPtr;
+  friend class utils::Singleton<Logger>;
+
+  LoggerImpl& GetLogger(const std::string& name);
+  void Shutdown() { logger_map_.clear(); }
+
+private:
+  Logger() = default;
+  ~Logger() { PRINT_FUNC(""); }
+
+private:
+  std::unordered_map<std::string, LoggerPtr> logger_map_;
+};
+
+
+struct LogHelper {
+  LogHelper(LogLevel lv, const char* file, int line) : level_(lv), file_(file), line_(line) {}
+  bool CheckLevel() const {
+    auto& logger = getLogger();
+    return level_ >= logger.GetLogLevel();
+  }
+
+  template<class... Args>
+  void operator()(Args&&... args) {
+    if (!CheckLevel()) {
+      return;
+    }
+    getLogger().Log(level_, file_.data(), line_, std::forward<Args>(args)...);
+  }
+
+private:
+  LoggerImpl& getLogger() const {
+    return Logger::Inst().GetLogger("default");
+  }
+
+private:
+  std::string_view file_;
+  int line_;
+  LogLevel level_;
 };
 
 
 }  // namespace yychi
 
-yychi::SimpleLogger& default_logger();
 
-#define LOG_TRACE(fmt, ...) \
-  default_logger().Log(yychi::LogLevel::TRACE, __FILE__, __LINE__, fmt, ##__VA_ARGS__)
+#define LOG_TRACE yychi::LogHelper(yychi::LogLevel::TRACE, __FILE__, __LINE__)
+#define LOG_DEBUG yychi::LogHelper(yychi::LogLevel::DEBUG, __FILE__, __LINE__)
+#define LOG_INFO yychi::LogHelper(yychi::LogLevel::INFO, __FILE__, __LINE__)
+#define LOG_WARN yychi::LogHelper(yychi::LogLevel::WARN, __FILE__, __LINE__)
+#define LOG_ERROR yychi::LogHelper(yychi::LogLevel::ERROR, __FILE__, __LINE__)
+#define LOG_FATAL yychi::LogHelper(yychi::LogLevel::FATAL, __FILE__, __LINE__)
 
-#define LOG_DEBUG(fmt, ...) \
-  default_logger().Log(yychi::LogLevel::DEBUG, __FILE__, __LINE__, fmt, ##__VA_ARGS__)
+// Marcos that do not eval arguments when log level is dismissed.
+#define LOG_TRACE0(...)                                                    \
+  do {                                                                     \
+    auto x = yychi::LogHelper(yychi::LogLevel::TRACE, __FILE__, __LINE__); \
+    if (x.CheckLevel()) {                                                  \
+      x(__VA_ARGS__);                                                      \
+    }                                                                      \
+  } while (0)
 
-#define LOG_INFO(fmt, ...) \
-  default_logger().Log(yychi::LogLevel::INFO, __FILE__, __LINE__, fmt, ##__VA_ARGS__)
+#define LOG_DEBUG0(...)                                                    \
+  do {                                                                     \
+    auto x = yychi::LogHelper(yychi::LogLevel::DEBUG, __FILE__, __LINE__); \
+    if (x.CheckLevel()) {                                                  \
+      x(__VA_ARGS__);                                                      \
+    }                                                                      \
+  } while (0)
 
-#define LOG_WARN(fmt, ...) \
-  default_logger().Log(yychi::LogLevel::WARN, __FILE__, __LINE__, fmt, ##__VA_ARGS__)
+#define LOG_INFO0(...)                                                    \
+  do {                                                                     \
+    auto x = yychi::LogHelper(yychi::LogLevel::INFO, __FILE__, __LINE__); \
+    if (x.CheckLevel()) {                                                  \
+      x(__VA_ARGS__);                                                      \
+    }                                                                      \
+  } while (0)
 
-#define LOG_ERROR(fmt, ...) \
-  default_logger().Log(yychi::LogLevel::ERROR, __FILE__, __LINE__, fmt, ##__VA_ARGS__)
+#define LOG_WARN0(...)                                                    \
+  do {                                                                     \
+    auto x = yychi::LogHelper(yychi::LogLevel::WARN, __FILE__, __LINE__); \
+    if (x.CheckLevel()) {                                                  \
+      x(__VA_ARGS__);                                                      \
+    }                                                                      \
+  } while (0)
 
-#define LOG_FATAL(fmt, ...) \
-  default_logger().Log(yychi::LogLevel::FATAL, __FILE__, __LINE__, fmt, ##__VA_ARGS__)
+#define LOG_ERROR0(...)                                                    \
+  do {                                                                     \
+    auto x = yychi::LogHelper(yychi::LogLevel::ERROR, __FILE__, __LINE__); \
+    if (x.CheckLevel()) {                                                  \
+      x(__VA_ARGS__);                                                      \
+    }                                                                      \
+  } while (0)
 
+// We do not nedd LOG_FATAL0 since FATAL is always logged out.

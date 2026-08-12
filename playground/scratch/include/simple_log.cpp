@@ -10,6 +10,7 @@
 #include <ctime>
 #include <filesystem>
 #include <memory>
+#include <optional>
 #include <sstream>
 #include <stdexcept>
 #include <string_view>
@@ -34,23 +35,24 @@ string GetFileBaseName(const string& filepath) {
 }
 }  // namespace
 
-SimpleLogger::SimpleLogger(LogLevel l) : level_(l), proc_thd_(make_unique<ProcThread>(this)) {
+LoggerImpl::LoggerImpl(LogLevel l) : level_(l), sinks_(), proc_thd_(make_unique<ProcThread>(this)) {
   proc_thd_->Start();
 }
 
-SimpleLogger::~SimpleLogger() {
+LoggerImpl::~LoggerImpl() {
   if (proc_thd_) {
     proc_thd_->Stop();
   }
   proc_thd_.reset();
+  // printf("log work thread destroyed\n");
 }
 
-void SimpleLogger::Log(LogLevel level, const char* file, int lineno, const char* fmt, ...) {
+void LoggerImpl::Log(LogLevel level, const char* file, int lineno, const char* fmt, ...) {
   if (level < level_) {
     return;
   }
 
-  char buf[1024];
+  char buf[1024]; // FIXME: what if overflow?
   va_list vl;
   va_start(vl, fmt);
   vsnprintf(buf, 1024, fmt, vl);
@@ -60,11 +62,18 @@ void SimpleLogger::Log(LogLevel level, const char* file, int lineno, const char*
       file, lineno, buf, std::chrono::system_clock::now(), level,
   };
 
-  proc_thd_->Post(std::move(rec));
+  if (proc_thd_) {
+    // FIXME: 如何保证 logger 对象最后销毁？
+    /* 可能 proc_thd_.reset 之后，其他线程还在调用 Log，这时回 SIGSEGV，
+     * 加这个判断会丢日志。
+     */
+    proc_thd_->Post(std::move(rec));
+  }
 }
 
+
 // clang-format off
-constexpr const char* SimpleLogger::LevelText(LogLevel lv) {
+constexpr const char* LoggerImpl::LevelText(LogLevel lv) {
   switch (lv) {
   case LogLevel::TRACE: return "TRACE";
   case LogLevel::DEBUG: return "DEBUG";
@@ -78,14 +87,16 @@ constexpr const char* SimpleLogger::LevelText(LogLevel lv) {
 }
 // clang-format on
 
-void SimpleLogger::WriteLog(string&& msg, int fd) {
+void LoggerImpl::WriteLog(string&& msg, int fd) {
   for (auto& s : sinks_) {
-    s->Write(msg, fd);
+    if (s) {
+      s.value()->Write(msg, fd);
+    }
   }
 }
 
 ////////////////////////////////////////////////////
-void SimpleLogger::ProcThread::OnDispatchWorkItem(LogRecord& rec) {
+void LoggerImpl::ProcThread::OnDispatchWorkItem(LogRecord& rec) {
   time_t t = chrono::system_clock::to_time_t(rec.tp);
   struct tm lt;
   utils::get_local_time(t, &lt);
@@ -103,6 +114,16 @@ void SimpleLogger::ProcThread::OnDispatchWorkItem(LogRecord& rec) {
   }
   // 1: stdout, 2: stderr
   owner_->WriteLog(os.str(), rec.level >= LogLevel::ERROR ? 2 : 1);
+}
+
+////////////////////////////////////////////////////
+LoggerImpl& Logger::GetLogger(const string& name) {
+  auto it = logger_map_.find(name);
+  if (it == logger_map_.end()) {
+    it = logger_map_.emplace(name, make_unique<LoggerImpl>()).first;
+    it->second->AddConsoleSink();
+  }
+  return *it->second;
 }
 
 namespace details {
@@ -255,11 +276,11 @@ void RotateFileSink::rename_forward(size_t i) {
 }  // namespace yychi
 
 
-yychi::SimpleLogger& default_logger() {
-  static yychi::SimpleLogger s_logger(yychi::LogLevel::TRACE);
-  static int _ = []{
-    s_logger.AddConsoleSink();
-    return 0;
-  }();
-  return s_logger;
-}
+// yychi::LoggerImpl& default_logger() {
+//   static yychi::LoggerImpl s_logger(yychi::LogLevel::TRACE);
+//   static int _ = []{
+//     s_logger.AddConsoleSink();
+//     return 0;
+//   }();
+//   return s_logger;
+// }

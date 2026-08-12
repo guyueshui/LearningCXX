@@ -1,4 +1,5 @@
 #include "my-timer.h"
+#include "simple_log.h"
 #include "test_utils.h"
 #include "vczh_test.h"
 
@@ -20,7 +21,7 @@ TEST_CASE(timer) {
   auto& t = Timer::Inst();
   t.Register(
       [val] {
-        printf("after %dms...\n", val);
+        LOG_INFO0("after %dms...\n", val);
         // std::this_thread::sleep_for(std::chrono::seconds(2));
       },
       val, 1300, true);
@@ -77,7 +78,7 @@ TEST_CASE(multi_thread) {
   for (int i = 0; i < N; ++i) {
     thds.emplace_back([&, i]{ // i 必须按值捕获，因为定时器执行时，i 已经无效。
       t.Register([&, i]{
-        printf("[thread_%d]: %d\n", i, count.fetch_add(1, memory_order_relaxed));
+        LOG_INFO("[thread_%d]: %d\n", i, count.fetch_add(1, memory_order_relaxed));
       }, 10);
     });
   }

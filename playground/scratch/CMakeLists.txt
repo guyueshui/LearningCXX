@@ -15,14 +15,14 @@ target_link_libraries(vtest utils)
 add_library(_asan INTERFACE)
 target_compile_options(_asan INTERFACE
     -O0 -g
-    -fsanitize=address
+    -fsanitize=address,leak
     -fno-omit-frame-pointer
 )
-target_link_options(_asan INTERFACE -fsanitize=address)
+target_link_options(_asan INTERFACE -fsanitize=address,leak)
 
 target_link_libraries(test_my_vector PRIVATE _asan)
 target_link_libraries(test_my_spsc PRIVATE _asan)
-target_link_libraries(test_timer PRIVATE utils)
-target_link_libraries(test_logger PRIVATE utils)
+target_link_libraries(test_timer PRIVATE utils _asan)
+target_link_libraries(test_logger PRIVATE utils _asan)
 
 add_subdirectory(include)

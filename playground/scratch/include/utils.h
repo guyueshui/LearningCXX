@@ -275,6 +275,29 @@ void WorkThreadT<T>::OnDispatchWorkItems(std::vector<T>& items) {
     }
 }
 
+
+template <typename T>
+class Singleton {
+public:
+    Singleton(const Singleton&) = delete;
+    Singleton& operator=(const Singleton&) = delete;
+
+    static T& Inst() {
+        /* It will not be freed automatically, actually a memory leak,
+         * but acceptable for singleton.
+         */
+        static T* s_ptr = new T;
+        return *s_ptr;
+        // static T s;
+        // return s;
+    }
+
+protected:
+    Singleton() = default;
+    ~Singleton() = default;
+};
+
+
 } // namspace utils
 
 
