@@ -1,9 +1,10 @@
 #ifndef __MACROS_H__
 #define __MACROS_H__
 
-#include <cstring>
 #include <stdint.h>
 #include <stdio.h>
+
+#include <cstring>
 #include <string>
 #include <typeinfo>
 #include <vector>
@@ -27,29 +28,28 @@ inline std::string demangle(const char* name) {
   return name;
 }
 
-#define PLACEHOLDER                                                            \
-  printf("--------------------------------------------------\n")
+inline void print_func_impl(const char* func, const char* tag = nullptr) {
+  if (tag && *tag) {
+    printf("[%s]:", tag);
+  }
+  printf("call %s\n", func);
+}
 
-#define PRINT_SIZE(T)                                                          \
-  do {                                                                         \
-    printf("type %s has size %zu\n", demangle(typeid(T).name()).c_str(),       \
-           sizeof(T));                                                         \
+#define PLACEHOLDER printf("--------------------------------------------------\n")
+
+#define PRINT_SIZE(T)                                                                \
+  do {                                                                               \
+    printf("type %s has size %zu\n", demangle(typeid(T).name()).c_str(), sizeof(T)); \
   } while (0)
 
-#define PRINT_FUNC(tag)                                                        \
-  do {                                                                         \
-    if (strlen(tag) > 0) {                                                     \
-      printf("[%s]:", tag);                                                    \
-    }                                                                          \
-    printf("call %s\n", __func__);                                             \
+#define PRINT_FUNC(...)                       \
+  do {                                        \
+    print_func_impl(__func__, ##__VA_ARGS__); \
   } while (0)
 
-#define PRINT_PRETTY_FUNC(tag)                                                 \
-  do {                                                                         \
-    if (strlen(tag) > 0) {                                                     \
-      printf("[%s]:", tag);                                                    \
-    }                                                                          \
-    printf("call %s\n", __PRETTY_FUNCTION__);                                  \
+#define PRINT_PRETTY_FUNC(...)                           \
+  do {                                                   \
+    print_func_impl(__PRETTY_FUNCTION__, ##__VA_ARGS__); \
   } while (0)
 
-#endif // __MACROS_H__
+#endif  // __MACROS_H__

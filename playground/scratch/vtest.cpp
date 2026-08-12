@@ -2,9 +2,11 @@
 #include "vczh_test.h"
 #include "utils.h"
 #include <algorithm>
+#include <atomic>
 #include <iostream>
 #include <queue>
 #include <string>
+#include <thread>
 #include <utility>
 #include <vector>
  
@@ -24,6 +26,15 @@ TEST_CASE(foo) {
 }
 
 TEST_CASE(bar) {
+    char buf[] = {'a', 'b', 'c'};
+    cout << buf << endl;
+
+    {
+        // overflow test
+        uint32_t x = UINT32_MAX + 2;
+        cout << "UINT32_MAX + 2 = " << x << endl; // outputs 1
+    }
+
     TEST_ASSERT(1==true);
     std::cout << "ok!\n";
     std::priority_queue<std::pair<int, int>> max_heap;
@@ -80,4 +91,24 @@ TEST_CASE(array) {
     cout<<"*(*parry+1):"<<*(*parry+1)<<endl;
     // cout<<"*(++arr):"<<*(++(int*(arr)))<<endl;
     cout<<"arr:"<<arr<<endl;
+}
+
+TEST_CASE(cout_interrupt) {
+    return;
+    using namespace std;
+    atomic_bool stop = false;
+    std::thread t1([&]{
+        while (!stop) {
+            cout << 1 << 2 << 3 << '\n';
+        }
+    });
+    std::thread t2([&]{
+        while (!stop) {
+            cout << 4 << 5 << 6 << '\n';
+        }
+    });
+    std::this_thread::sleep_for(3s);
+    stop.store(true, std::memory_order_release);
+    t1.join();
+    t2.join();
 }
