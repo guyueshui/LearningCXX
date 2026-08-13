@@ -35,19 +35,17 @@ void print_object_size(T t)
 class TimeCounter
 {
 private:
-    std::chrono::time_point<std::chrono::steady_clock> start_;
+    typedef std::chrono::steady_clock Clock;
+    Clock::time_point start_;
 
 public:
-    TimeCounter(): start_(std::chrono::steady_clock::now()) {}
-    void reset()
-    {
-        start_ = std::chrono::steady_clock::now();
-    }
+    TimeCounter(): start_(Clock::now()) {}
+    void reset() { start_ = Clock::now(); }
 
     template <typename T>
     long elapsed()
     {
-        auto past_time = std::chrono::steady_clock::now() - start_;
+        auto past_time = Clock::now() - start_;
         auto x = std::chrono::duration_cast<T>(past_time);
         return x.count();
     }
@@ -84,6 +82,11 @@ public:
     bool Post(const std::vector<WorkItem>& is);
     bool Post(std::vector<WorkItem>&& is);
 
+    // Should be called before work thread starts.
+    void SetTimerInterval(unsigned ms) {
+        interval_ms_ = ms;
+    }
+
 protected:
     virtual bool OnThreadInitialize(const char* name = nullptr) {
         if (name != nullptr) {
@@ -94,8 +97,10 @@ protected:
     virtual void OnThreadTerminated() {}
     virtual void OnDispatchWorkItems(std::vector<WorkItem>& items);
     virtual void OnDispatchWorkItem(WorkItem& item) {}
+    virtual void OnTimer() {}
 
 private:
+    void workLoop();
     void threadProc() {
         /* 这样有bug, 不安全地访问is_terminating_, 导致最后退出时线程工作线程阻塞，
          明明Stop中设置is_terminating_为true, join时便成了false. 其实是后面又执行
@@ -136,40 +141,59 @@ notify_all()
         OnThreadTerminated();
     }
 
-    // 这段放到 onThreadRun 里面，treadProc 处理外部逻辑
-    void workLoop() {
-        std::vector<WorkItem> items;
-        while (true) {
-            {
-                std::unique_lock<std::mutex> lock(mu_);
-                cv_.wait(lock, [this]{ return is_terminating_ || !q_.empty(); });
-
-                // 排空 q 中剩余 item，再推出
-                if (q_.empty()) { // implies is_terminating_ = true
-                    break;
-                }
-
-                /* 立刻退出，可能q中还有item没处理
-                if (is_terminating_) {
-                    break;
-                }
-                */
-
-                items.swap(q_);
+    void triggerTimer() {
+        if (interval_ms_ > 0) {
+            using namespace std::chrono;
+            auto now = steady_clock::now();
+            if (duration_cast<milliseconds>(now - last_timer_call_).count() >= interval_ms_) {
+                last_timer_call_ = now;
+                OnTimer();
             }
-            OnDispatchWorkItems(items);
-            items.clear();
         }
     }
 
 private:
     std::vector<WorkItem> q_;
+    std::chrono::steady_clock::time_point last_timer_call_{}; // utc epoch
+    unsigned interval_ms_ = 0;
 
     std::unique_ptr<std::thread> worker_;
     std::mutex mu_;
     std::condition_variable cv_;
     bool is_terminating_ = false;
 };
+
+template <typename T>
+void WorkThreadT<T>::workLoop() {
+    auto ms = std::chrono::milliseconds(interval_ms_);
+    std::vector<T> items;
+    while (true) {
+        {
+            std::unique_lock<std::mutex> lock(mu_);
+            if (ms.count() > 0) {
+                cv_.wait_for(lock, ms, [this]{ return is_terminating_ || !q_.empty(); });
+            } else {
+                cv_.wait(lock, [this]{ return is_terminating_ || !q_.empty(); });
+            }
+
+            // 排空 q 中剩余 item，再退出
+            if (is_terminating_ && q_.empty()) {
+                break;
+            }
+
+            /* 立刻退出，可能q中还有item没处理
+            if (is_terminating_) {
+                break;
+            }
+            */
+
+            items.swap(q_);
+        }
+        triggerTimer();
+        OnDispatchWorkItems(items);
+        items.clear();
+    }
+}
 
 template <typename T>
 bool WorkThreadT<T>::Start() {
@@ -272,6 +296,7 @@ template <typename T>
 void WorkThreadT<T>::OnDispatchWorkItems(std::vector<T>& items) {
     for (auto& i : items) {
         OnDispatchWorkItem(i);
+        triggerTimer();
     }
 }
 

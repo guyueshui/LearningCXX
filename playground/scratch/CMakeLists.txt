@@ -24,5 +24,6 @@ target_link_libraries(test_my_vector PRIVATE _asan)
 target_link_libraries(test_my_spsc PRIVATE _asan)
 target_link_libraries(test_timer PRIVATE utils _asan)
 target_link_libraries(test_logger PRIVATE utils _asan)
+target_link_libraries(test_workthread PRIVATE utils _asan)
 
 add_subdirectory(include)
