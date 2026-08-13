@@ -253,19 +253,19 @@ private:
   } while (0)
 
 #define LOG_INFO0(...)                                                    \
-  do {                                                                     \
+  do {                                                                    \
     auto x = yychi::LogHelper(yychi::LogLevel::INFO, __FILE__, __LINE__); \
-    if (x.CheckLevel()) {                                                  \
-      x(__VA_ARGS__);                                                      \
-    }                                                                      \
+    if (x.CheckLevel()) {                                                 \
+      x(__VA_ARGS__);                                                     \
+    }                                                                     \
   } while (0)
 
 #define LOG_WARN0(...)                                                    \
-  do {                                                                     \
+  do {                                                                    \
     auto x = yychi::LogHelper(yychi::LogLevel::WARN, __FILE__, __LINE__); \
-    if (x.CheckLevel()) {                                                  \
-      x(__VA_ARGS__);                                                      \
-    }                                                                      \
+    if (x.CheckLevel()) {                                                 \
+      x(__VA_ARGS__);                                                     \
+    }                                                                     \
   } while (0)
 
 #define LOG_ERROR0(...)                                                    \

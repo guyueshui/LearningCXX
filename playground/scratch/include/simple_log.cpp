@@ -272,7 +272,6 @@ void RotateFileSink::rename_forward(size_t i) {
 }
 
 }  // namespace details
-
 }  // namespace yychi
 
 
