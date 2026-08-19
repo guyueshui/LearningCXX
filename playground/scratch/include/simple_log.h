@@ -89,12 +89,11 @@ public:
 public:
   LoggerImpl() : LoggerImpl(LogLevel::TRACE) {}
   LoggerImpl(LogLevel l);
+  // 根据三五法则，无需显式删除移动构造 + 赋值
   LoggerImpl(const LoggerImpl&) = delete;
-  LoggerImpl(LoggerImpl&&) = delete;
+  LoggerImpl& operator=(const LoggerImpl&) = delete;
   ~LoggerImpl();
 
-  LoggerImpl& operator=(const LoggerImpl&) = delete;
-  LoggerImpl& operator=(LoggerImpl&&) = delete;
 
   // template <class... Args>
   // void Log(LogLevel lv, Args&&... args);

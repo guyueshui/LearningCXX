@@ -25,12 +25,20 @@ char* rand_str(char* str, const size_t len)
 }
 
 bool set_thread_name(std::thread* thread, const char* name) {
-   auto handle = thread->native_handle();
-   return pthread_setname_np(handle, name) == 0;
+#ifdef __linux__
+  auto handle = thread->native_handle();
+  return pthread_setname_np(handle, name) == 0;
+#else
+  return true;
+#endif
 }
 
 bool set_thread_name(const char* name) {
+#ifdef __linux__
   return pthread_setname_np(pthread_self(), name) == 0;
+#else
+  return true;
+#endif
 }
 
 bool get_local_time(time_t t, struct tm *out) {

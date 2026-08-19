@@ -322,6 +322,35 @@ protected:
     ~Singleton() = default;
 };
 
+#if __cplusplus >= 201103L
+
+class NonCopyable {
+protected:
+    constexpr NonCopyable() noexcept = default;
+    ~NonCopyable() = default;
+
+    // // Allow move.
+    // NonCopyable(NonCopyable&&) noexcept = default;
+    // NonCopyable& operator=(NonCopyable&&) noexcept = default;
+
+public:
+    NonCopyable(const NonCopyable&) = delete;
+    NonCopyable& operator=(const NonCopyable&) = delete;
+};
+
+#else
+
+class NonCopyable {
+protected:
+    NonCopyable() {}
+    ~NonCopyable() {}
+private:
+    NonCopyable(const NonCopyable&);
+    NonCopyable& operator=(const NonCopyable&);
+};
+
+#endif
+
 
 } // namspace utils
 

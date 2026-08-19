@@ -214,11 +214,16 @@ public:
   priority_queue(const std::vector<T>& seq) : data_(seq), size_(seq.size()), cmp_(Comp()) {
     make_heap(data_, cmp_);
   }
-  priority_queue(const priority_queue& other) = default;
-  priority_queue(priority_queue&& other) = default;
-  priority_queue& operator=(const priority_queue& rhs) = default;
-  priority_queue& operator=(priority_queue&& rhs) = default;
-  ~priority_queue() = default;
+
+  /* 根据三五法则，这五个显示标记default，等于不写。因为这五个一个都不定义时，
+   * 编译器会生成相应的默认版本。但是一旦定义了一个，其他都不会生成了，所以
+   * 最好五个都定义出来。
+   */
+  // priority_queue(const priority_queue& other) = default;
+  // priority_queue(priority_queue&& other) = default;
+  // priority_queue& operator=(const priority_queue& rhs) = default;
+  // priority_queue& operator=(priority_queue&& rhs) = default;
+  // ~priority_queue() = default;
 
   void push(const T& v) {
     push_heap(data_, size_, v, cmp_);
