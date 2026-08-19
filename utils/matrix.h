@@ -9,6 +9,7 @@
 #ifndef __YMAT_H__
 #define __YMAT_H__
 
+#include <cstring>
 #include <iostream>
 
 template <typename T>
@@ -20,7 +21,7 @@ public:
   using const_reference = const T&;
 
 public:
-  Matrix(int nr = 0, int nc = 0);
+  Matrix(int nr, int nc);
   Matrix(int nr, int nc, std::initializer_list<T> il);
   Matrix(const Matrix&);
   Matrix& operator=(const Matrix&);
@@ -63,7 +64,7 @@ Matrix<T>::Matrix(int nr, int nc)
     throw std::invalid_argument("row/col size must > 0");
   row_ = nr;
   col_ = nc;
-  data_ = new T [nr * nc];
+  data_ = new T [nr * nc]{};
 }
 
 template <typename T>
@@ -171,6 +172,15 @@ Matrix<T> Matrix<T>::operator*(const Matrix<T>& rhs) const
         ret[i][j] += (*this)[i][k] * rhs[k][j];
     }
   }
+
+  // the following i-j-k loop will be slower cause it's not cache-friendly
+  // for (unsigned i = 0; i < row_; ++i) {
+  //   for (unsigned j = 0; j < rhs.col_; ++j) {
+  //     for (unsigned k = 0; k < col_; ++k) {
+  //       ret[i][j] = (*this)[i][k] * rhs[k][j];
+  //     }
+  //   }
+  // }
   return ret;
 }
 
