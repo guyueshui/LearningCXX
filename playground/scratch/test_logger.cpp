@@ -1,7 +1,9 @@
 #include "macros.h"
 #include "simple_log.h"
 #include "test_utils.h"
+#include "utils.h"
 #include "vczh_test.h"
+#include <chrono>
 #include <thread>
 
 
@@ -34,20 +36,28 @@ TEST_CASE(early) {
     logger.LogWarn(__FILE__, __LINE__, "let me make some %s, format %d", "str", 5);
     constexpr int N = 10000;
     // constexpr int N = 0;
+    unsigned long long cost = 0;
+    utils::TimeCounter t;
     for (int i = 0; i < N; ++i) {
+        t.reset();
         logger.LogInfo(__FILE__, __LINE__, "this is aksdjflasjdkfjasldkjflkjaslkdjfaksjdkfjasd %d", i);
+        cost += t.elapsed<chrono::microseconds>();
         // this_thread::sleep_for(100ms);
     }
+    printf("log %d times cost avg %.2fus\n", N, 1.0 * cost / N);
     // this_thread::sleep_for(3s);
 }
 
 TEST_CASE(logger_manager) {
     auto& l = Logger::Inst().GetLogger("test");
     l.AddFileSink("log_manager.log");
-    l.RemoveSink(yychi::SinkSlot::CONSOLE);
+    l.LogWarn(__FILE__, __LINE__, "this will be logged to console.");
+    l.RemoveSink(yychi::SinkSlot::CONSOLE); // remove 之前的 log，在实际写入时可能已经没有这个 sink，造成冲突
+    l.LogWarn(__FILE__, __LINE__, "this will not.");
+
+    l.LogDebug(__FILE__, __LINE__, "this will be logged.");
     l.SetLogLevel(LogLevel::INFO);
-    l.LogInfo(__FILE__, __LINE__, "are you ok");
-    l.LogWarn(__FILE__, __LINE__, "are you ok %d", 99);
+    l.LogDebug(__FILE__, __LINE__, "this will not. %d", 99);
 }
 
 int foo(const char* tag) {
@@ -68,4 +78,12 @@ TEST_CASE(default_logger) {
     LOG_ERROR("a=%d, b=%c", foo("error"), 'a');
     LOG_DEBUG0("a=%d, b=%c", foo("debug0"), 'b');
     LOG_DEBUG("a=%d, b=%c", foo("debug"), 'b');
+
+    string_view s{"hello world"};
+    LOG_FATAL("this is %s", s.data());
+    s.remove_suffix(6);
+    cout << s << endl;
+    LOG_FATAL("after remove suffix: %s", s.data());
+    LOG_FATAL("use this way %*s", s.size(), s.data());
+    LOG_FATAL("use this way %.*s", s.size(), s.data());
 }

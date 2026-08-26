@@ -3,9 +3,11 @@
 #include "utils.h"
 #include <algorithm>
 #include <atomic>
+#include <chrono>
 #include <cstring>
 #include <exception>
 #include <iostream>
+#include <mutex>
 #include <queue>
 #include <string>
 #include <thread>
@@ -20,8 +22,8 @@ TEST_CASE(foo) {
     TEST_ASSERT(1==2);
     std::cout << "running end ...\n";
     std::vector<int> v;
-    v.max_size();
-    v.capacity();
+    (void)v.max_size();
+    (void)v.capacity();
     v.push_back(1);
     int a = 1;
     v.push_back(a);
@@ -73,26 +75,33 @@ TEST_CASE(rand_str) {
 
 TEST_CASE(array) {
     int arr[6]={1,2,3,4,5,6};
-    // int &refs[6]=arr;
-    int (&arrRef)[6]=arr;
-    int (*parry)[6]=&arr;
-    // int (*parry1)[6]=arr;
+    // int &refs[6]=arr;  // error: array of refrence is invalid
+    int (&arrRef)[6]=arr; // ok: reference of int[6]
+    int (*parry)[6]=&arr; // ok: pointer to int[6]
+    // int (*parry1)[6]=arr; // error: cannot bind int[6] to int(*)[6]
     for(size_t i=0;i<6;++i){
+        TEST_ASSERT((*parry)[i] == *(*parry + i));
         cout<<(*parry)[i]<<" ";
     }
+    // for(size_t i=0;i<6;++i){
+    //     cout << *(*parry + i) << " ";
+    // }
     cout<<endl;
-    cout<<"parry:"<<parry<<endl;
-    cout<<"*parry:"<<*parry<<endl;
-    cout<<"arr:"<<arr<<endl;
-    cout<<"arrRef:"<<arrRef<<endl;
-    cout<<"++parry:"<<++parry<<endl;
-    cout<<"*(++parry):"<<*(++parry)<<endl;
-    cout<<"**(++parry):"<<**(++parry)<<endl;
-    cout<<"**parry"<<**parry<<endl;
-    
-    cout<<"*(*parry+1):"<<*(*parry+1)<<endl;
-    // cout<<"*(++arr):"<<*(++(int*(arr)))<<endl;
-    cout<<"arr:"<<arr<<endl;
+    const int* const base = arr;
+    TEST_ASSERT(parry == &arr);
+    TEST_ASSERT(static_cast<void*>(parry) == arr);
+    TEST_ASSERT((*parry) == +arr); // + force `arr` decay to int*
+    TEST_ASSERT(+arrRef == arr);   // same as above
+
+    cout << "arr:" << arr << endl;
+    cout<<"++parry:"<< (parry + 1) <<endl;
+    TEST_ASSERT(static_cast<void*>(parry + 1) == (char*)arr + sizeof(arr));
+
+    cout<<"*(++parry):"<<*(parry + 1)<<endl; // invalid address
+    cout<<"**(++parry):"<<**(parry + 1)<<endl; // invalid
+    TEST_ASSERT(**parry == 1);
+    TEST_ASSERT(*(*parry + 1) == 2);
+    TEST_ASSERT(*(arr+1) == 2);
 }
 
 TEST_CASE(cout_interrupt) {
@@ -126,47 +135,22 @@ TEST_CASE(noncopyable) {
 }
 
  
-struct Good: std::enable_shared_from_this<Good> // 注意：继承
-{
-    std::shared_ptr<Good> getptr() {
-        return shared_from_this();
-    }
-};
- 
-struct Bad
-{
-    // 错误写法：用不安全的表达式试图获得 this 的 shared_ptr 对象
-    std::shared_ptr<Bad> getptr() {
-        return std::shared_ptr<Bad>(this);
-    }
-    ~Bad() { std::cout << "Bad::~Bad() called\n"; }
-};
- 
-TEST_CASE(shared_from_this) {
+TEST_CASE(mutex_cost) {
+    constexpr int N = 1000'000;
+    utils::TimeCounter tc;
+    std::mutex mu;
+    unsigned long long x = 0, y = 0;
+    for (int n = N; n--;) {
+        tc.reset();
+        mu.lock();
+        x += tc.elapsed<std::chrono::nanoseconds>();
 
-    // 正确的示例：两个 shared_ptr 对象将会共享同一对象
-    std::shared_ptr<Good> gp1 = std::make_shared<Good>();
-    std::shared_ptr<Good> gp2 = gp1->getptr();
-    std::cout << "gp2.use_count() = " << gp2.use_count() << '\n';
- 
-    // 错误的使用示例：调用 shared_from_this 但其没有被 std::shared_ptr 占有
-    try {
-        Good not_so_good;
-        std::shared_ptr<Good> gp1 = not_so_good.getptr();
-    } catch(std::bad_weak_ptr& e) {
-        // C++17 前为未定义行为；C++17 起抛出 std::bad_weak_ptr 异常
-        std::cout << e.what() << '\n';    
+        tc.reset();
+        mu.unlock();
+        y += tc.elapsed<std::chrono::nanoseconds>();
     }
- 
-    try {
-        // 错误的示例，每个 shared_ptr 都认为自己是对象仅有的所有者
-        std::shared_ptr<Bad> bp1 = std::make_shared<Bad>();
-        std::shared_ptr<Bad> bp2 = bp1->getptr();
-        std::cout << "bp2.use_count() = " << bp2.use_count() << '\n';
-        // UB：Bad 对象将会被删除两次
-    } catch (std::exception& e) {
-        cout << e.what() << '\n';
-    } catch (...) {
-        cout << "unknown exception\n";
-    }
-} 
+    auto lock_avg = 1.0 * x / N;
+    auto unlock_avg = 1. * y / N;
+    printf("lock_avg=%.3fns, unlock_avg=%.3fns\n", lock_avg, unlock_avg);
+    printf("lock_total=%llu, unlock_total=%llu\n", x, y);
+}
