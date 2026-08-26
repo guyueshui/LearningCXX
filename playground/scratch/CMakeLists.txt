@@ -1,5 +1,5 @@
 file(GLOB demo_srcs *.cpp)
-message(STATUS "listing source...\n" list ${demo_srcs})
+# message(STATUS "listing source...\n" ${demo_srcs})
 foreach(srcfile IN LISTS demo_srcs)
     get_filename_component(elfname ${srcfile} NAME_WE)
     message(STATUS "compile ${srcfile} ..to.. ${elfname}")
@@ -29,3 +29,4 @@ target_link_libraries(test_objpool PRIVATE _asan)
 target_link_libraries(test_threadpool PRIVATE utils)
 
 add_subdirectory(include)
+add_subdirectory(unitest)
