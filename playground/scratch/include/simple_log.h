@@ -105,6 +105,11 @@ public:
   LogLevel GetLogLevel() const { return level_; }
 
   template <class... Args>
+  void LogDebug(const char* file, int ln, Args&&... args) {
+    Log(LogLevel::DEBUG, file, ln, std::forward<Args>(args)...);
+  }
+
+  template <class... Args>
   void LogInfo(const char* file, int ln, Args&&... args) {
     Log(LogLevel::INFO, file, ln, std::forward<Args>(args)...);
   }
@@ -125,6 +130,11 @@ public:
     return true;
   }
 
+  /** Remove a log sink.
+   *
+   * It causes a data race on `sinks_`,
+   * so it must be used before doing any log.
+   */
   void RemoveSink(SinkSlot slot) {
     sinks_.at(slot).reset();
   }

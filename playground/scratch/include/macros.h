@@ -1,13 +1,11 @@
 #ifndef __MACROS_H__
 #define __MACROS_H__
 
-#include <stdint.h>
 #include <stdio.h>
 
 #include <cstring>
 #include <string>
 #include <typeinfo>
-#include <vector>
 
 // name to string
 #define __STR_IMPL(x) #x

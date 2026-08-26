@@ -19,11 +19,11 @@ namespace utils {
 
 ThreadPool::ThreadPool(size_t n_threads) {
   for (size_t i = 0; i < n_threads; ++i) {
-#ifndef NDEBUG
-    LOG_INFO(LOGTAG "creating thread %zu", i);
-#endif
     thds_.emplace_back([this] { threadProc(); });
   }
+#ifndef NDEBUG
+  LOG_INFO(LOGTAG "%zu threads created", n_threads);
+#endif
 }
 
 ThreadPool::~ThreadPool() {
@@ -33,11 +33,11 @@ ThreadPool::~ThreadPool() {
   }
   cv_.notify_all();
   for (thread& t : thds_) {
-#ifndef NDEBUG
-    LOG_INFO(LOGTAG "destroy thread");
-#endif
     t.join();
   }
+#ifndef NDEBUG
+  LOG_INFO(LOGTAG "%zu threads stopped", thds_.size());
+#endif
 }
 
 void ThreadPool::threadProc() {
@@ -133,7 +133,7 @@ bool ThreadPoolIndexed::Start(size_t n_threads) {
   for (size_t i = 0; i < n_threads; ++i) {
     thds_.emplace_back(std::make_unique<Thread>(i));
   }
-  LOG_INFO("ThreadPool-i started %zu threads.", thds_.size());
+  LOG_INFO("[TPI] started %zu threads.", thds_.size());
   if (thds_.size() == n_threads) {
     ready_.store(true, std::memory_order_release);
     return true;
@@ -147,7 +147,7 @@ void ThreadPoolIndexed::Stop() {
   }
   ready_.store(false, std::memory_order_release);
   thds_.clear();  // make Thread destruct
-  LOG_INFO("ThreadPool-i stopped.");
+  LOG_INFO("[TPI] stopped.");
 }
 
 bool ThreadPoolIndexed::Post(int index, Task&& task) {
