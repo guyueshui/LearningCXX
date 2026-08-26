@@ -11,6 +11,14 @@
             "program": "${workspaceRoot}/build/${fileBasenameNoExtension}",
             "args": [],
             "cwd": "${workspaceRoot}/build"
+        },
+        {
+            "name": "tcproxy",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${workspaceRoot}/build/tcproxy",
+            "args": ["127.0.0.1", "3222"],
+            "cwd": "${workspaceRoot}/build"
         }
     ]
 }

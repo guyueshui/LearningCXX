@@ -63,7 +63,9 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/build)
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/build/)
 
 #加入包含目录
-include_directories(${CMAKE_SOURCE_DIR}/scratch/include) 
+include_directories(
+    ${CMAKE_SOURCE_DIR}/scratch/include
+    ${CMAKE_SOURCE_DIR}/third_party/include)
 
 
 # 接口库，用于汇聚通用配置
@@ -90,3 +92,4 @@ add_subdirectory(scratch)
 # add_executable(test_link ${test_link_src})
 #: or we can use subdirectory
 add_subdirectory(test_link)
+add_subdirectory(tcp_proxy)
