@@ -1,8 +1,8 @@
 // https://think-async.com/Asio/asio-1.22.1/doc/asio/tutorial/tuttimer5.html
+#include <asio/detail/chrono.hpp>
 #include <asio/io_context.hpp>
 #include <iostream>
 #include <asio.hpp>
-#include <boost/bind/bind.hpp>
 
 
 class Printer
@@ -11,7 +11,7 @@ public:
     Printer(asio::io_context& io)
         : count_(0),
           timer1_(io, asio::chrono::seconds(1)),
-          timer2_(io, asio::chrono::seconds(1)),
+          timer2_(io, asio::chrono::milliseconds(1500)),
           strand_(asio::make_strand(io))
     {
         timer1_.async_wait(asio::bind_executor(strand_, std::bind(&Printer::print1, this)));
@@ -55,8 +55,6 @@ int main()
     asio::thread t([&io]() { io.run(); });
     auto f = std::bind(&asio::io_context::run, std::forward<asio::io_context*>(&io));
     auto g = std::bind(&Printer::print1, &p);
-    boost::bind(&Printer::print2, &p);
-    boost::bind(&asio::io_context::run, &io);
     io.run();
     t.join();
     return 0;

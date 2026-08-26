@@ -10,7 +10,7 @@
 
 #include <iostream>
 #include <thread>
-#include <boost/array.hpp>
+#include <array>
 #include <asio.hpp>
 
 using asio::ip::tcp;
@@ -29,14 +29,14 @@ int main(int argc, char* argv[])
 
     tcp::resolver resolver(io_context);
     tcp::resolver::results_type endpoints =
-      resolver.resolve(argv[1], "daytime");
+      resolver.resolve(argv[1], "12345");
 
     tcp::socket socket(io_context);
     asio::connect(socket, endpoints);
 
     for (;;)
     {
-      boost::array<char, 128> buf;
+      std::array<char, 128> buf;
       asio::error_code error;
 
       size_t len = socket.read_some(asio::buffer(buf), error);
