@@ -17,7 +17,7 @@
             "type": "lldb",
             "request": "launch",
             "program": "${workspaceRoot}/build/tcproxy",
-            "args": ["127.0.0.1", "3222"],
+            "args": ["0.0.0.0:5566"],
             "cwd": "${workspaceRoot}/build"
         }
     ]
