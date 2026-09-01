@@ -2,6 +2,7 @@
 
 #include "macros.h"
 #include "utils.h"
+
 #include <array>
 #include <chrono>
 #include <cstdarg>
@@ -14,7 +15,6 @@
 #include <string_view>
 #include <unordered_map>
 #include <utility>
-
 
 namespace yychi {
 
@@ -94,7 +94,6 @@ public:
   LoggerImpl& operator=(const LoggerImpl&) = delete;
   ~LoggerImpl();
 
-
   // template <class... Args>
   // void Log(LogLevel lv, Args&&... args);
 
@@ -119,7 +118,7 @@ public:
     Log(LogLevel::WARN, file, ln, std::forward<Args>(args)...);
   }
 
-  void WriteLog(std::string&& msg, int fd=0);
+  void WriteLog(std::string&& msg, int fd = 0);
 
   bool AddConsoleSink() {
     auto& x = sinks_[SinkSlot::CONSOLE];
@@ -135,11 +134,9 @@ public:
    * It causes a data race on `sinks_`,
    * so it must be used before doing any log.
    */
-  void RemoveSink(SinkSlot slot) {
-    sinks_.at(slot).reset();
-  }
+  void RemoveSink(SinkSlot slot) { sinks_.at(slot).reset(); }
 
-  bool AddFileSink(const std::string& filepath, size_t bufsize=0) {
+  bool AddFileSink(const std::string& filepath, size_t bufsize = 0) {
     auto& x = sinks_[SinkSlot::FILE];
     if (x) {
       return false;
@@ -148,7 +145,8 @@ public:
     return true;
   }
 
-  bool AddRotateFileSink(const std::string& filepath, size_t bufsize, size_t maxsize, unsigned maxkeep) {
+  bool AddRotateFileSink(const std::string& filepath, size_t bufsize, size_t maxsize,
+                         unsigned maxkeep) {
     auto& x = sinks_[SinkSlot::FILE_ROT];
     if (x) {
       return false;
@@ -156,7 +154,6 @@ public:
     x.emplace(std::make_unique<details::RotateFileSink>(filepath, bufsize, maxsize, maxkeep));
     return true;
   }
-
 
 private:
   struct LogRecord {
@@ -178,9 +175,7 @@ private:
     LoggerImpl* owner_;
   };
 
-  static constexpr const char* LevelText(LogLevel lv);
   void log(LogLevel level, const char* fmt, va_list args);
-
 
 private:
   LogLevel level_;
@@ -188,15 +183,35 @@ private:
   std::unique_ptr<ProcThread> proc_thd_;
 };
 
-
 /* Singleton to manager loggers. */
 class Logger : public utils::Singleton<Logger> {
 public:
   typedef std::unique_ptr<LoggerImpl> LoggerPtr;
   friend class utils::Singleton<Logger>;
 
+  // Get logger by name.
   LoggerImpl& GetLogger(const std::string& name);
+
+  // Get the default logger.
+  LoggerImpl& GetLogger() { return GetLogger("default"); }
+
   void Shutdown() { logger_map_.clear(); }
+
+  // Get the text of log level.
+  static constexpr const char* LevelText(LogLevel lv) {
+    // clang-format off
+    switch (lv) {
+    case LogLevel::TRACE: return "TRACE";
+    case LogLevel::DEBUG: return "DEBUG";
+    case LogLevel::INFO: return "INFO";
+    case LogLevel::WARN: return "WARN";
+    case LogLevel::ERROR: return "ERROR";
+    case LogLevel::FATAL: return "FATAL";
+    case LogLevel::OFF:;
+    }
+    return "UNKNOWN";
+  }
+  // clang-format on
 
 private:
   Logger() = default;
@@ -206,7 +221,6 @@ private:
   std::unordered_map<std::string, LoggerPtr> logger_map_;
 };
 
-
 struct LogHelper {
   LogHelper(LogLevel lv, const char* file, int line) : level_(lv), file_(file), line_(line) {}
   bool CheckLevel() const {
@@ -214,7 +228,7 @@ struct LogHelper {
     return level_ >= logger.GetLogLevel();
   }
 
-  template<class... Args>
+  template <class... Args>
   void operator()(Args&&... args) {
     if (!CheckLevel()) {
       return;
@@ -223,9 +237,7 @@ struct LogHelper {
   }
 
 private:
-  LoggerImpl& getLogger() const {
-    return Logger::Inst().GetLogger("default");
-  }
+  LoggerImpl& getLogger() const { return Logger::Inst().GetLogger(); }
 
 private:
   std::string_view file_;
@@ -233,9 +245,7 @@ private:
   LogLevel level_;
 };
 
-
 }  // namespace yychi
-
 
 #define LOG_TRACE yychi::LogHelper(yychi::LogLevel::TRACE, __FILE__, __LINE__)
 #define LOG_DEBUG yychi::LogHelper(yychi::LogLevel::DEBUG, __FILE__, __LINE__)

@@ -71,22 +71,6 @@ void LoggerImpl::Log(LogLevel level, const char* file, int lineno, const char* f
   }
 }
 
-
-// clang-format off
-constexpr const char* LoggerImpl::LevelText(LogLevel lv) {
-  switch (lv) {
-  case LogLevel::TRACE: return "TRACE";
-  case LogLevel::DEBUG: return "DEBUG";
-  case LogLevel::INFO: return "INFO";
-  case LogLevel::WARN: return "WARN";
-  case LogLevel::ERROR: return "ERROR";
-  case LogLevel::FATAL: return "FATAL";
-  case LogLevel::OFF:;
-  }
-  return "UNKNOWN";
-}
-// clang-format on
-
 void LoggerImpl::WriteLog(string&& msg, int fd) {
   for (auto& s : sinks_) {
     if (s) {
@@ -107,7 +91,7 @@ void LoggerImpl::ProcThread::OnDispatchWorkItem(LogRecord& rec) {
   snprintf(buf + written_bytes, sizeof(buf) - written_bytes, ".%03ld", ms);
   const string& raw = rec.msg;
   std::ostringstream os;
-  os << buf << " [" << LevelText(rec.level) << "] " << GetFileBaseName(rec.file.data()) << ':'
+  os << buf << " [" << Logger::LevelText(rec.level) << "] " << GetFileBaseName(rec.file.data()) << ':'
      << rec.lineno << " - " << raw;
   if (raw.empty() || raw.back() != '\n') {
     os << '\n';

@@ -1,4 +1,5 @@
 #include <str_utils.h>
+#include <algorithm>
 
 using std::string;
 using std::vector;
@@ -24,6 +25,13 @@ vector<string> Split(const string& s, const string& delim) {
     ret.push_back(s.substr(prev_pos));
   }
   return ret;
+}
+void ToLowerI(string& s) noexcept {
+  std::transform(s.begin(), s.end(), s.begin(), AsciiLower);
+}
+string ToLower(string s) {
+  ToLowerI(s);
+  return s;
 }
 
 
