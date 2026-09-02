@@ -29,4 +29,3 @@ target_link_libraries(test_objpool PRIVATE _asan)
 target_link_libraries(test_threadpool PRIVATE utils)
 
 add_subdirectory(include)
-add_subdirectory(unitest)

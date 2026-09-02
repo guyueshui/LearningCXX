@@ -92,4 +92,5 @@ add_subdirectory(scratch)
 # add_executable(test_link ${test_link_src})
 #: or we can use subdirectory
 add_subdirectory(test_link)
+add_subdirectory(unitest)
 add_subdirectory(tcp_proxy)

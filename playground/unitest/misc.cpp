@@ -1,8 +1,11 @@
 #include "str_utils.h"
 #include <catch2/matchers/catch_matchers.hpp>
+#include <map>
 #include <memory>
 #include <iostream>
 #include <catch2/catch_test_macros.hpp>
+#include <string>
+#include <unordered_map>
 
 using namespace std;
 
@@ -47,7 +50,7 @@ TEST_CASE("shared_from_this") {
     }
 }
 
-TEST_CASE("string", "[utils]") {
+TEST_CASE("string", "[utils][string]") {
     string s{"hello world"};
     REQUIRE(utils::StartWith(s, "hello"));
     REQUIRE(utils::EndWith(s, "rld"));
@@ -57,4 +60,51 @@ TEST_CASE("string", "[utils]") {
     CHECK(s.compare("hello world!") < 0);
     REQUIRE(s.compare(0, 5, "hello") == 0);
     REQUIRE(s.compare(s.size() - 3, 3, "rld") == 0);
+}
+
+TEST_CASE("string to lower", "[utils][string]") {
+    string a = "hELLo WoRlD";
+    auto b = utils::ToLower(a);
+    REQUIRE(b == "hello world");
+    utils::ToLowerI(a);
+    REQUIRE(a == b);
+    REQUIRE(utils::StartWith(a, "hello"));
+    REQUIRE(utils::EndWith(a, "world"));
+}
+
+SCENARIO("ASCII to lower", "[utils][string]") {
+    GIVEN("an uppper case letter") {
+        const char c = 'A';
+        WHEN("call tolower on it") {
+            const char d = utils::AsciiLower(c);
+            THEN("get the lowercase of it") {
+                REQUIRE(d == 'a');
+            }
+        }
+    }
+}
+
+TEST_CASE("case insensitive map", "[utils][string]") {
+    map<string, int, utils::IgnorecaseCompare> m {
+        {"abc", 1}, {"DeF", 2}, {"aBc", 3}
+    };
+    REQUIRE(m.size() == 2);
+    m.emplace("hello", 4);
+    auto [_, inserted] = m.emplace("def", 5);
+    REQUIRE_FALSE(inserted);
+    auto it = m.find("hElLo");
+    REQUIRE(it != m.end());
+}
+
+TEST_CASE("case insensitve unordered map", "[utils][string]") {
+    unordered_map<string, int, utils::IgnorecaseHash, utils::IgnorecaseEqual> m {
+        {"abc", 1}, {"DeF", 2}, 
+        {"abc", 1}, {"DeF", 2}, {"aBc", 3}
+    };
+    REQUIRE(m.size() == 2);
+    m.emplace("hello", 4);
+    auto [_, inserted] = m.emplace("def", 5);
+    REQUIRE_FALSE(inserted);
+    auto it = m.find("hElLo");
+    REQUIRE(it != m.end());
 }
