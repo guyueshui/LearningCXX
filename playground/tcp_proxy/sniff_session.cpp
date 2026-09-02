@@ -1,4 +1,5 @@
 #include "macros.h"
+#include "route.h"
 #include "simple_log.h"
 #include "sniff_session.h"
 #include "str_utils.h"
@@ -20,37 +21,24 @@
 #include <system_error>
 #include <vector>
 
-#include "atomizes.hpp"
 
 using namespace std;
 using asio::ip::tcp;
 
-namespace {
-
-// Provided by perplexity.ai
-bool MatchRdp(string_view packet) {
-  constexpr size_t min_rdp_bytes = 11;
-  if (packet.size() < min_rdp_bytes) {
-    return false;
-  }
-  auto p = reinterpret_cast<const unsigned char*>(packet.data());
-  if (p[0] != 0x03 || p[1] != 0x00) {
-    return false;
-  }
-  const size_t tpkt_len = (static_cast<size_t>(p[2]) << 8) | p[3];
-  if (tpkt_len < min_rdp_bytes || tpkt_len > 8192) {
-    return false;
-  }
-  if (p[5] != 0xE0 || p[4] < 6) {
-    return false;
-  }
-  return true;
-}
-
-}  // namespace
 
 namespace V2 {
 
+bool Upstream::FromHostPort(const string& hp) {
+  auto v = utils::Split(hp, ":");
+  if (v.size() != 2) {
+    return false;
+  }
+  host = v[0];
+  port = v[1];
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 TcpMuxSession::TcpMuxSession(tcp::socket client_socket)
     : id_(getId()),
       strand_(asio::make_strand(client_socket.get_executor())),
@@ -299,62 +287,7 @@ void TcpMuxSession::tryRoute() {
 }
 
 ClassifyResult TcpMuxSession::classify(string_view packet) {
-  using K = ClassifyResult::Kind;
-  ClassifyResult r;
-  if (packet.size() >= 4 && memcmp(packet.data(), "SSH-", 4) == 0) {
-    r.upstream = {"127.0.0.1", "3222"};
-    r.kind = K::Route;
-    return r;
-  }
-
-  if (MatchRdp(packet)) {
-    r.upstream = {"127.0.0.1", "3389"};
-    r.kind = K::Route;
-    return r;
-  }
-
-  // try parse http packet
-  const auto pos = packet.find("\r\n\r\n");
-  if (pos != string_view::npos) {
-    const string header{packet.substr(0, pos + 4)};
-    atomizes::HTTPMessageParser parser;
-    atomizes::HTTPMessage msg;
-    parser.Parse(&msg, header);
-    LOG_DEBUG0(
-        "[%lu]"
-        "\n\theader_count:%zu"
-        "\n\tmethod:%d"
-        "\n\tpath:%s"
-        "\n\tversion:%s"
-        "\n\tstatus_msg:%s"
-        "\n\tstatus_code:%u"
-        "\n\tua:%s"
-        "\n\thost:%s"
-        "\n\taccpet:%s"
-        "\n",
-        id_, msg.HeaderCount(), msg.GetMethod(), msg.GetPath().c_str(), msg.GetVersion().c_str(),
-        msg.GetStatusMessage().c_str(), msg.GetStatusCode(), msg.GetHeader("User-Agent").c_str(),
-        msg.GetHeader("Host").c_str(), msg.GetHeader("Accept").c_str());
-    const string& path = msg.GetPath();
-    if (utils::StartWith(path, "/immich")) {
-      r.upstream = {"127.0.0.1", "2283"};
-      r.kind = K::Route;
-      return r;
-    } else if (utils::StartWith(path, "/nextcloud")) {
-      r.upstream = {"127.0.0.1", "7080"};
-      r.kind = K::Route;
-      return r;
-    } else {
-      r.upstream = {"127.0.0.1", "5244"};
-      r.kind = K::Route;
-      return r;
-    }
-  }
-
-  LOG_DEBUG0("unrecognized packet: %.*s, try sniff more...", static_cast<int>(packet.size()),
-             packet.data());
-  r.kind = K::NeedMoreData;
-  return r;
+  return Sniff(packet, id_);
 }
 
 void TcpMuxSession::onSniffTimeout(const asio::error_code& ec) {

@@ -20,6 +20,7 @@ namespace V2 {
 struct Upstream {
   std::string host;
   std::string port;
+  bool FromHostPort(const std::string& hp);
 };
 
 struct ClassifyResult {
@@ -27,7 +28,7 @@ struct ClassifyResult {
 
   Kind kind = Kind::Reject;
   Upstream upstream{};
-  std::string_view reason{""};
+  std::string reason{""};
 };
 
 class TcpMuxSession : public std::enable_shared_from_this<TcpMuxSession> {

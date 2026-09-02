@@ -1,3 +1,4 @@
+#include "config_read.h"
 #include "simple_log.h"
 #include "sniff_session.h"
 #include "str_utils.h"
@@ -13,21 +14,28 @@
 #include <exception>
 #include <iostream>
 #include <memory>
+#include <string>
+
 
 using asio::ip::tcp;
-using namespace clara;
+using std::string, std::cout, std::endl;
+
+Config g_config;
+
 
 int main(int argc, const char* argv[]) {
   bool show_help = false;
-  bool flag = false;
-  std::string arg_local_addr;
+  // bool flag = false;
+  string arg_local_addr;
+  string arg_conf_file;
   unsigned n_threads = 1;
-  auto cli = Help(show_help)("show this help and exit").required() |
-             Opt(flag)["-d"]["--doit"]("Do the thing") |
-             Opt(n_threads, "threads")["-j"]("Number of io threads(1..16)") |
-             Arg(arg_local_addr, "local-addr")("local address(host:port) to listen on");
+  auto cli = clara::Help(show_help)("Show this help and exit").required() |
+             clara::Opt(arg_conf_file, "file")["-c"]["--config"]("Config file") |
+            //  clara::Opt(flag)["-d"]["--doit"]("Do the thing") |
+             clara::Opt(n_threads, "threads")["-j"]("Number of io threads(1..16)") |
+             clara::Arg(arg_local_addr, "local-addr")("local address(host:port) to listen on");
 
-  auto result = cli.parse(Args(argc, argv));
+  auto result = cli.parse(clara::Args{argc, argv});
   if (!result) {
     std::cerr << "Error in command line: " << result.errorMessage() << std::endl;
     return 1;
@@ -37,9 +45,24 @@ int main(int argc, const char* argv[]) {
     return 0;
   }
 
-  std::cout << flag << '\n';
-  std::cout << arg_local_addr << '\n';
-  auto hp = utils::Split(arg_local_addr, ":");
+  if (arg_conf_file.empty()) {
+    arg_conf_file = "config.yml";
+  }
+  if (!load_config(arg_conf_file, g_config)) {
+    return 1;
+  }
+
+  auto& log = yychi::Logger::Inst();
+  log.GetLogger().SetLogLevel(g_config.log_level);
+  if (!g_config.log_file.empty()) {
+    log.GetLogger().AddRotateFileSink(g_config.log_file, 0, g_config.log_max_size * 1024, g_config.log_max_keep);
+  }
+  LOG_INFO0("log level is set to %s", yychi::Logger::LevelText(g_config.log_level));
+
+  if (!arg_local_addr.empty()) {
+    g_config.local_addr = std::move(arg_local_addr);
+  }
+  auto hp = utils::Split(g_config.local_addr, ":");
   if (hp.size() != 2) {
     std::cerr << "failed to parse local-addr" << std::endl;
     return 1;

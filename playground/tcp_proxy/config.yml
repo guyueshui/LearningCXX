@@ -1,0 +1,18 @@
+listen_addr:
+  # maybe both ipv4/v6 are listened
+  - 0.0.0.0:5566
+protocols:
+  ssh: 127.0.0.1:3222
+  rdp: 127.0.0.1:3389
+  http:
+    - path: /immich
+      backend: 127.0.0.1:2283
+    - path: /nextcloud
+      backend: 127.0.0.1:7080
+    - path: /
+      backend: 127.0.0.1:5244
+log:
+  level: debug
+  file: log/tcproxy.log
+  max_size: 10240 # each log file's max size in KB
+  max_backup: 5 # max log files to keep
