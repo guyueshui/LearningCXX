@@ -1,7 +1,7 @@
 #pragma once
 
-#include "sniff_session.h"
+#include "config_read.h"
 
 #include <string_view>
 
-V2::ClassifyResult Sniff(std::string_view packet, uint64_t id_);
+ClassifyResult Sniff(std::string_view packet, uint64_t id_);

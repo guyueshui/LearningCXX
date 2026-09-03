@@ -15,4 +15,4 @@ log:
   level: debug
   file: log/tcproxy.log
   max_size: 10240 # each log file's max size in KB
-  max_backup: 5 # max log files to keep
+  max_keep: 5 # max log files to keep

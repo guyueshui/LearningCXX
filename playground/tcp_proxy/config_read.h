@@ -6,9 +6,23 @@
 #include <string>
 #include <unordered_map>
 
+struct Address {
+  std::string host;
+  std::string port;
+  bool FromHostPort(const std::string& hp);
+};
+
+struct ClassifyResult {
+  enum class Kind { NeedMoreData, Route, Reject };
+
+  Kind kind = Kind::Reject;
+  Address upstream{};
+  std::string reason{""};
+};
 
 struct Config {
-  std::string local_addr;
+  Address cli_local;
+  std::vector<Address> listen_addrs;
 
   std::string ssh_backend;
   std::string rdp_backend;
@@ -23,4 +37,5 @@ struct Config {
   unsigned log_max_keep;
 };
 
-bool load_config(const std::string& filepath, Config& c);
+bool LoadConfig(const std::string& filepath, Config& c);
+void LogInit(const Config& c);

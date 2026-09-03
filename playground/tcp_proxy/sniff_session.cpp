@@ -2,7 +2,6 @@
 #include "route.h"
 #include "simple_log.h"
 #include "sniff_session.h"
-#include "str_utils.h"
 
 #include <asio/bind_executor.hpp>
 #include <asio/connect.hpp>
@@ -21,24 +20,9 @@
 #include <system_error>
 #include <vector>
 
-
 using namespace std;
 using asio::ip::tcp;
 
-
-namespace V2 {
-
-bool Upstream::FromHostPort(const string& hp) {
-  auto v = utils::Split(hp, ":");
-  if (v.size() != 2) {
-    return false;
-  }
-  host = v[0];
-  port = v[1];
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////////////////
 TcpMuxSession::TcpMuxSession(tcp::socket client_socket)
     : id_(getId()),
       strand_(asio::make_strand(client_socket.get_executor())),
@@ -82,7 +66,7 @@ void TcpMuxSession::stopImpl() {
   upstream_.close(ignored);
 }
 
-void TcpMuxSession::connect(const Upstream& u) {
+void TcpMuxSession::connect(const Address& u) {
   auto self = shared_from_this();
   resolver_.async_resolve(
       u.host, u.port,
@@ -286,9 +270,7 @@ void TcpMuxSession::tryRoute() {
       }));
 }
 
-ClassifyResult TcpMuxSession::classify(string_view packet) {
-  return Sniff(packet, id_);
-}
+ClassifyResult TcpMuxSession::classify(string_view packet) { return Sniff(packet, id_); }
 
 void TcpMuxSession::onSniffTimeout(const asio::error_code& ec) {
   if (ec == asio::error::operation_aborted) {
@@ -414,5 +396,3 @@ void SessionManager::StopAll() {
     s->Stop();
   }
 }
-
-}  // namespace V2

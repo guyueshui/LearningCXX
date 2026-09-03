@@ -1,12 +1,10 @@
 #include "config_read.h"
 #include "route.h"
-#include "sniff_session.h"
 
 #include <string_view>
 
 #include "atomizes.hpp"
 
-using namespace V2;
 using std::string_view, std::string;
 
 namespace {
@@ -82,6 +80,8 @@ ClassifyResult Sniff(string_view packet, uint64_t id_) {
     atomizes::HTTPMessageParser parser;
     atomizes::HTTPMessage msg;
     parser.Parse(&msg, header);
+    const string& path = msg.GetPath();
+    const string seg{FirstPathSegment(path)};
     LOG_DEBUG0(
         "[%lu]"
         "\n\theader_count:%zu"
@@ -92,13 +92,12 @@ ClassifyResult Sniff(string_view packet, uint64_t id_) {
         "\n\tstatus_code:%u"
         "\n\tua:%s"
         "\n\thost:%s"
-        "\n\taccpet:%s"
+        "\n\taccept:%s"
+        "\n\tseg:%s"
         "\n",
-        id_, msg.HeaderCount(), msg.GetMethod(), msg.GetPath().c_str(), msg.GetVersion().c_str(),
+        id_, msg.HeaderCount(), msg.GetMethod(), path.c_str(), msg.GetVersion().c_str(),
         msg.GetStatusMessage().c_str(), msg.GetStatusCode(), msg.GetHeader("User-Agent").c_str(),
-        msg.GetHeader("Host").c_str(), msg.GetHeader("Accept").c_str());
-    const string& path = msg.GetPath();
-    const string seg{FirstPathSegment(path)};
+        msg.GetHeader("Host").c_str(), msg.GetHeader("Accept").c_str(), seg.c_str());
     auto it = g_config.http_backends.find(seg);
     if (it != g_config.http_backends.end()) {
       return GetRoute(it->second, it->first);

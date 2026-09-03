@@ -1,5 +1,6 @@
 #pragma once
 
+#include "config_read.h"
 #include "macros.h"
 
 #include <asio/any_io_executor.hpp>
@@ -15,22 +16,6 @@
 #include <string>
 #include <unordered_map>
 
-namespace V2 {
-
-struct Upstream {
-  std::string host;
-  std::string port;
-  bool FromHostPort(const std::string& hp);
-};
-
-struct ClassifyResult {
-  enum class Kind { NeedMoreData, Route, Reject };
-
-  Kind kind = Kind::Reject;
-  Upstream upstream{};
-  std::string reason{""};
-};
-
 class TcpMuxSession : public std::enable_shared_from_this<TcpMuxSession> {
   using tcp = asio::ip::tcp;
 
@@ -42,7 +27,7 @@ public:
   uint64_t Id() const { return id_; }
 
 private:
-  void connect(const Upstream& u);
+  void connect(const Address& u);
 
   // On connected to upstream.
   void onConnect(const asio::error_code& ec, const tcp::endpoint& ep);
@@ -82,7 +67,6 @@ private:
   bool stopped_ = false;
 };
 
-
 class SessionManager {
 public:
   typedef std::shared_ptr<TcpMuxSession> SessPtr;
@@ -98,7 +82,6 @@ private:
   std::unordered_map<uint64_t, SessWPtr> sess_{};
   bool ready_ = true;
 };
-
 
 class TcpProxyServer {
   using tcp = asio::ip::tcp;
@@ -117,5 +100,3 @@ private:
   asio::strand<asio::any_io_executor> strand_;
   SessionManager sess_mgr_;
 };
-
-}  // namespace V2

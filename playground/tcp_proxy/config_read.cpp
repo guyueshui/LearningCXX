@@ -1,14 +1,28 @@
 #include "config_read.h"
+#include "str_utils.h"
 
 #include <yaml-cpp/exceptions.h>
 #include <yaml-cpp/node/parse.h>
 #include <yaml-cpp/yaml.h>
 
 #include <cassert>
+#include <string>
 
 using std::string;
 
-bool load_config(const string& filepath, Config& c) {
+bool Address::FromHostPort(const string& hp) {
+  auto v = utils::Split(hp, ":");
+  if (v.size() != 2) {
+    return false;
+  }
+  host = v[0];
+  port = v[1];
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool LoadConfig(const string& filepath, Config& c) {
   try {
     YAML::Node root = YAML::LoadFile(filepath);
 
@@ -17,7 +31,17 @@ bool load_config(const string& filepath, Config& c) {
       fprintf(stderr, "listen_addr must be sequence\n");
       return false;
     }
-    c.local_addr = (*listen_addr.begin()).as<string>();
+
+    // TODO: respect cmd args
+    for (auto it = listen_addr.begin(); it != listen_addr.end(); ++it) {
+      string hp = it->as<string>();
+      Address addr;
+      if (!addr.FromHostPort(hp)) {
+        fprintf(stderr, "invalid address: %s\n", hp.c_str());
+        return false;
+      }
+      c.listen_addrs.push_back(std::move(addr));
+    }
 
     auto protocols = root["protocols"];
     c.ssh_backend = protocols["ssh"].as<string>("");
@@ -34,7 +58,8 @@ bool load_config(const string& filepath, Config& c) {
 
     auto log = root["log"];
     if (log) {
-      auto l = log["level"].as<std::string_view>("trace");
+      auto l = log["level"].as<std::string>("trace");
+      utils::ToLowerI(l);
       if (l.compare(0, 5, "trace") == 0) {
         c.log_level = yychi::LogLevel::TRACE;
       } else if (l.compare(0, 5, "debug") == 0) {
@@ -53,7 +78,6 @@ bool load_config(const string& filepath, Config& c) {
       c.log_file = log["file"].as<string>("");
       c.log_max_size = log["max_size"].as<unsigned>(1024);
       c.log_max_keep = log["max_keep"].as<unsigned>(10);
-      printf("max_size=%u, max_keep=%u\n", c.log_max_size, c.log_max_keep);
     }
 
   } catch (const YAML::BadFile& e) {
@@ -67,8 +91,17 @@ bool load_config(const string& filepath, Config& c) {
             e.what());
     return false;
   } catch (std::exception& e) {
-    fprintf(stderr, "load_config failed, file '%s', err '%s'\n", filepath.c_str(), e.what());
+    fprintf(stderr, "load config failed, file '%s', err '%s'\n", filepath.c_str(), e.what());
     return false;
   }
   return true;
+}
+
+void LogInit(const Config& c) {
+  auto& log = yychi::Logger::Inst().GetLogger();
+  log.SetLogLevel(c.log_level);
+  if (!c.log_file.empty()) {
+    log.AddRotateFileSink(c.log_file, 0, c.log_max_size * 1024, c.log_max_keep);
+  }
+  LOG_INFO0("log level is set to %s", yychi::Logger::LevelText(c.log_level));
 }
