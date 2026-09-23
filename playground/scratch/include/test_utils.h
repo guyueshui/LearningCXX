@@ -63,6 +63,17 @@ GenrateVec(T a, T b, size_t n) {
 
 #endif
 
-
+template <typename T, typename U>
+bool VecEq(const std::vector<T>& lhs, const std::vector<U>& rhs) {
+    if (lhs.size() != rhs.size()) {
+        return false;
+    }
+    for (size_t i = 0; i < lhs.size(); ++i) {
+        if (lhs[i] != rhs[i]) {
+            return false;
+        }
+    }
+    return true;
+}
 
 } // namespace utils

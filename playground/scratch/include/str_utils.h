@@ -10,14 +10,23 @@ bool StartWith(const std::string& s, const std::string& prefix);
 bool EndWith(const std::string& s, const std::string& suffix);
 std::vector<std::string> Split(const std::string& s, const std::string& delim = " ");
 
-// Inplace convert `s` to lowercase.
+/// Convert @p s to lowercase inplace.
 void ToLowerI(std::string& s) noexcept;
 
-// Get the lowercase of `s`.
+/// Convert @param s to uppercase inplace.
+void ToUpperI(std::string& s) noexcept;
+
+/// Get the lowercase of `s`.
 std::string ToLower(std::string s);
+
+/// Get the uppercase of `s`.
+std::string ToUpper(std::string s);
 
 constexpr char AsciiLower(char c) noexcept {
   return (c >= 'A' && c <= 'Z') ? c - 'A' + 'a' : c;
+}
+constexpr char AsciiUpper(char c) noexcept {
+  return (c >= 'a' && c <= 'z') ? c - 'a' + 'A' : c;
 }
 
 // A functor used to ignore case string map.
@@ -66,5 +75,13 @@ struct IgnorecaseEqual {
     return true;
   }
 };
+
+/// Calculate the partial match table in KMP for @p pattern.
+///
+/// cf. https://www.zhihu.com/question/21923021/answer/37475572
+std::vector<int> KmpCalcPmt(const std::string& pattern);
+
+/// Search the @p pattern in @p text using the KMP algorithm, return all matched indices.
+std::vector<size_t> KmpSearchAll(const std::string& text, const std::string& pattern);
 
 }  // namespace utils
