@@ -21,7 +21,7 @@ using std::string, std::cout, std::endl;
 Config g_config;
 
 struct CmdLine {
-  clara::Parser MakeCmdlineParser(Config& c) {
+  clara::Parser* MakeCmdlineParser(Config& c) {
     using namespace clara;
     auto const set_local_addr = [&](const string& token) {
       if (!c.cli_local.FromHostPort(token)) {
@@ -34,7 +34,7 @@ struct CmdLine {
           clara::Opt(arg_conf_file, "file")["-c"]["--config"]("Config file") |
           clara::Opt(n_threads, "threads")["-j"]("Number of io threads(1..16)") |
           clara::Arg(set_local_addr, "local-addr")("local address(host:port) to listen on");
-    return cli;
+    return &cli;
   }
 
   void ShowHelp() const {
@@ -51,7 +51,7 @@ int main(int argc, const char* argv[]) {
   CmdLine cmd;
   auto cli = cmd.MakeCmdlineParser(g_config);
 
-  auto result = cli.parse(clara::Args{argc, argv});
+  auto result = cli->parse(clara::Args{argc, argv});
   if (!result) {
     std::cerr << "Error in command line: " << result.errorMessage() << std::endl;
     return 1;

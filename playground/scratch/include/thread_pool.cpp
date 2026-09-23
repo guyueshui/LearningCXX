@@ -5,13 +5,14 @@
 #include <memory>
 #include <thread>
 #include <vector>
-#ifndef NDEBUG
-  #include "simple_log.h"
-#endif
 #include <cstdio>
 #include <mutex>
 
-#define LOGTAG "[ThreadPool] "
+#ifndef NDEBUG
+  #include "simple_log.h"
+  #define LOGTAG "[ThreadPool] "
+#endif
+
 using std::unique_lock, std::mutex, std::lock_guard, std::thread;
 using std::vector;
 
@@ -133,7 +134,9 @@ bool ThreadPoolIndexed::Start(size_t n_threads) {
   for (size_t i = 0; i < n_threads; ++i) {
     thds_.emplace_back(std::make_unique<Thread>(i));
   }
+#ifndef NDEBUG
   LOG_INFO("[TPI] started %zu threads.", thds_.size());
+#endif
   if (thds_.size() == n_threads) {
     ready_.store(true, std::memory_order_release);
     return true;
@@ -147,7 +150,9 @@ void ThreadPoolIndexed::Stop() {
   }
   ready_.store(false, std::memory_order_release);
   thds_.clear();  // make Thread destruct
+#ifndef NDEBUG
   LOG_INFO("[TPI] stopped.");
+#endif
 }
 
 bool ThreadPoolIndexed::Post(int index, Task&& task) {
